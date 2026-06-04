@@ -1,0 +1,32 @@
+▲ Next.js 16.1.6 (webpack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.50.136:3000
+
+✓ Starting...
+✓ Ready in 2s
+○ Compiling / ...
+ GET / 200 in 7.9s (compile: 7.6s, render: 268ms)
+ GET / 200 in 111ms (compile: 13ms, render: 97ms)
+ GET / 200 in 115ms (compile: 7ms, render: 108ms)
+ GET /chapter/5 200 in 1198ms (compile: 1148ms, render: 50ms)
+ GET /chapter/5 200 in 32ms (compile: 8ms, render: 24ms)
+ GET / 200 in 36ms (compile: 15ms, render: 21ms)
+ GET /chapter/1 200 in 628ms (compile: 574ms, render: 54ms)
+ GET /chapter/5 200 in 39ms (compile: 11ms, render: 28ms)
+ GET /chapter/5 200 in 735ms (compile: 214ms, render: 521ms)
+ GET /chapter/5 200 in 155ms (compile: 35ms, render: 120ms)
+ GET /chapter/5 200 in 395ms (compile: 15ms, render: 379ms)
+ GET / 200 in 119ms (compile: 30ms, render: 89ms)
+ GET /chapter/5 200 in 99ms (compile: 8ms, render: 91ms)
+ GET / 200 in 22ms (compile: 5ms, render: 17ms)
+ GET /chapter/5 200 in 763ms (compile: 235ms, render: 528ms)
+ GET /chapter/5 200 in 224ms (compile: 13ms, render: 211ms)
+ GET /chapter/5 200 in 233ms (compile: 23ms, render: 210ms)
+ GET /chapter/5 200 in 467ms (compile: 10ms, render: 457ms)
+ GET / 200 in 205ms (compile: 99ms, render: 107ms)
+ GET /chapter/5 200 in 142ms (compile: 15ms, render: 127ms)
+ GET /chapter/5 200 in 217ms (compile: 128ms, render: 89ms)
+ GET /chapter/5 200 in 434ms (compile: 106ms, render: 328ms)
+ GET / 200 in 28ms (compile: 11ms, render: 17ms)
+ GET / 200 in 167ms (compile: 99ms, render: 68ms)
+ GET / 200 in 122ms (compile: 71ms, render: 50ms)
