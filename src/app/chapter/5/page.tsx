@@ -140,6 +140,27 @@ const ACTIONS: ActionAsset[] = [
   { id: "freedom", label: "Độc lập tự do", shortLabel: "DL" },
 ];
 
+const FLAG_SCENE_IDS: SceneId[] = ["tantrao", "badinh", "appeal"];
+
+const successImageMotion = {
+  scale: [1, 1.045, 1.02],
+  x: ["0%", "-1.5%", "0%"],
+  y: ["0%", "-1%", "0%"],
+};
+
+const successImageTransition = {
+  duration: 7,
+  repeat: Infinity,
+  repeatType: "mirror" as const,
+  ease: "easeInOut" as const,
+};
+
+const shimmerTransition = {
+  duration: 4.8,
+  repeat: Infinity,
+  ease: "easeInOut" as const,
+};
+
 const STEPS: StepRule[] = [
   {
     sceneId: "tantrao",
@@ -405,6 +426,10 @@ export default function Chapter5Page() {
             const result = panelResults[index];
             const locked = isPanelLocked(index);
             const scene = getScene(panel.sceneId);
+            const hasFlagShimmer =
+              result.isSuccess &&
+              !!panel.sceneId &&
+              FLAG_SCENE_IDS.includes(panel.sceneId);
 
             return (
               <motion.div
@@ -448,16 +473,24 @@ export default function Chapter5Page() {
 
                 <AnimatePresence mode="wait">
                   {result.displayImg ? (
-                    <motion.img
+                    <motion.div
                       key={result.displayImg}
-                      src={result.displayImg}
-                      alt={scene?.label || "Bối cảnh"}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.35 }}
-                      className="absolute inset-0 w-full h-full object-cover z-0"
-                    />
+                      className="absolute inset-0 z-0 overflow-hidden"
+                    >
+                      <motion.img
+                        src={result.displayImg}
+                        alt={scene?.label || "Bối cảnh"}
+                        animate={result.isSuccess ? successImageMotion : {}}
+                        transition={
+                          result.isSuccess ? successImageTransition : undefined
+                        }
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    </motion.div>
                   ) : (
                     <motion.div
                       key="empty"
@@ -473,6 +506,15 @@ export default function Chapter5Page() {
                   )}
                 </AnimatePresence>
 
+                {hasFlagShimmer && (
+                  <motion.div
+                    initial={{ x: "-120%", opacity: 0 }}
+                    animate={{ x: ["-120%", "120%"], opacity: [0, 0.18, 0] }}
+                    transition={shimmerTransition}
+                    className="absolute inset-y-0 -left-1/2 z-10 w-1/2 pointer-events-none bg-gradient-to-r from-transparent via-amber-100/50 to-transparent skew-x-[-18deg]"
+                  />
+                )}
+
                 {!result.isSuccess && panel.characters.length > 0 && (
                   <div className="absolute inset-0 z-10 flex items-end justify-center pb-8 px-4 pointer-events-none">
                     <div className="flex h-[76%] gap-3 w-full justify-center">
@@ -485,6 +527,7 @@ export default function Chapter5Page() {
                             key={characterId}
                             initial={{ y: -18, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
+                            transition={{ duration: 0.25 }}
                             className="h-full relative pointer-events-none"
                           >
                             <img
