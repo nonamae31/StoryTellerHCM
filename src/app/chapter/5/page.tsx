@@ -14,12 +14,20 @@ const IMAGE_URLS = {
     "https://res.cloudinary.com/di7brya3o/image/upload/v1780590753/ChatGPT_Image_Jun_4_2026_11_24_58_PM_1_lelfdq.png",
   badinhEmpty:
     "https://res.cloudinary.com/di7brya3o/image/upload/v1780590752/ChatGPT_Image_Jun_4_2026_11_24_59_PM_2_pgnn7n.png",
+  colonialFull:
+    "https://res.cloudinary.com/di7brya3o/image/upload/v1780674481/ChatGPT_Image_Jun_5_2026_10_46_51_PM_1_evff0t.png",
+  colonialEmpty:
+    "https://res.cloudinary.com/di7brya3o/image/upload/v1780674489/ChatGPT_Image_Jun_5_2026_10_46_52_PM_2_lhbdzf.png",
   diplomacyEmpty:
     "https://res.cloudinary.com/di7brya3o/image/upload/v1780590751/ChatGPT_Image_Jun_4_2026_11_24_59_PM_3_iyboqb.png",
   hoChiMinh: "/BookImage/Story5/ch5_hochiminh_cutout.png",
   diplomacyFull:
     "https://res.cloudinary.com/di7brya3o/image/upload/v1780590751/ChatGPT_Image_Jun_4_2026_11_25_16_PM_3_s1mefn.png",
   comrade: "/BookImage/Story5/ch5_comrade_cutout.png",
+  principleEmpty:
+    "https://res.cloudinary.com/di7brya3o/image/upload/v1780671985/ChatGPT_Image_Jun_5_2026_09_52_31_PM_kqtcb6.png",
+  principleFull:
+    "https://res.cloudinary.com/di7brya3o/image/upload/v1780671985/ChatGPT_Image_Jun_5_2026_09_52_31_PM_kqtcb6.png",
   appealEmpty:
     "https://res.cloudinary.com/di7brya3o/image/upload/v1780595982/ChatGPT_Image_Jun_5_2026_12_58_26_AM_2_pveige.png",
   appealFull:
@@ -28,6 +36,31 @@ const IMAGE_URLS = {
     "https://res.cloudinary.com/di7brya3o/image/upload/v1780596628/ChatGPT_Image_Jun_5_2026_01_10_14_AM_1_r5fkz7.png",
   testamentEmpty:
     "https://res.cloudinary.com/di7brya3o/image/upload/v1780596636/ChatGPT_Image_Jun_5_2026_01_10_14_AM_2_cuq1sa.png",
+  hcmTantrao:
+    "/BookImage/Story5/generated/ch5_hcm_tantrao.png",
+  hcmBadinh:
+    "/BookImage/Story5/generated/ch5_hcm_badinh.png",
+  hcmPrinciple:
+    "/BookImage/Story5/generated/ch5_hcm_principle.png",
+  hcmDiplomacy:
+    "/BookImage/Story5/generated/ch5_hcm_diplomacy.png",
+  hcmAppeal:
+    "/BookImage/Story5/generated/ch5_hcm_appeal.png",
+  hcmTestament:
+    "/BookImage/Story5/generated/ch5_hcm_testament.png",
+  comradeTantrao:
+    "/BookImage/Story5/generated/ch5_comrade_tantrao.png",
+  comradeBadinh:
+    "/BookImage/Story5/generated/ch5_comrade_badinh.png",
+  comradePrinciple:
+    "/BookImage/Story5/generated/ch5_comrade_principle.png",
+  comradeDiplomacy:
+    "/BookImage/Story5/generated/ch5_comrade_diplomacy.png",
+  comradeAppeal:
+    "/BookImage/Story5/generated/ch5_comrade_appeal.png",
+  comradeTestament:
+    "/BookImage/Story5/generated/ch5_comrade_testament.png",
+  colonialSoldier: "/BookImage/Story5/generated/ch5_colonial_soldier.png",
 };
 
 const WIN_AUDIO_URL =
@@ -36,10 +69,11 @@ const WIN_AUDIO_URL =
 type SceneId =
   | "tantrao"
   | "badinh"
+  | "principle"
   | "diplomacy"
   | "appeal"
   | "testament";
-type CharacterId = "hochiminh" | "comrade";
+type CharacterId = "hochiminh" | "comrade" | "colonial";
 type ActionId = "time" | "declaration" | "freedom";
 
 interface SceneAsset {
@@ -48,6 +82,8 @@ interface SceneAsset {
   year: string;
   emptyImg: string;
   successImg: string;
+  quoteText: string;
+  characterImages: Partial<Record<CharacterId, string>>;
 }
 
 interface CharacterAsset {
@@ -81,6 +117,7 @@ interface PanelResult {
   isError: boolean;
   outcome: string | null;
   displayImg: string | null;
+  characterCue: string | null;
 }
 
 const SCENES: SceneAsset[] = [
@@ -90,6 +127,11 @@ const SCENES: SceneAsset[] = [
     year: "1945",
     emptyImg: IMAGE_URLS.tantraoEmpty,
     successImg: IMAGE_URLS.tantraoFull,
+    quoteText: "Giờ quyết định cho vận mệnh dân tộc ta đã đến.",
+    characterImages: {
+      hochiminh: IMAGE_URLS.hcmTantrao,
+      comrade: IMAGE_URLS.comradeTantrao,
+    },
   },
   {
     id: "badinh",
@@ -97,13 +139,36 @@ const SCENES: SceneAsset[] = [
     year: "2/9/1945",
     emptyImg: IMAGE_URLS.badinhEmpty,
     successImg: IMAGE_URLS.badinhFull,
+    quoteText: "Nước Việt Nam có quyền hưởng tự do và độc lập.",
+    characterImages: {
+      hochiminh: IMAGE_URLS.hcmBadinh,
+      comrade: IMAGE_URLS.comradeBadinh,
+    },
+  },
+  {
+    id: "principle",
+    label: "Bất biến",
+    year: "1946",
+    emptyImg: IMAGE_URLS.principleEmpty,
+    successImg: IMAGE_URLS.principleFull,
+    quoteText: "Dĩ bất biến, ứng vạn biến.",
+    characterImages: {
+      hochiminh: IMAGE_URLS.hcmPrinciple,
+      comrade: IMAGE_URLS.comradePrinciple,
+    },
   },
   {
     id: "diplomacy",
-    label: "Ngoại giao",
-    year: "1945-1946",
-    emptyImg: IMAGE_URLS.diplomacyEmpty,
-    successImg: IMAGE_URLS.diplomacyFull,
+    label: "Sức ép thực dân",
+    year: "1946",
+    emptyImg: IMAGE_URLS.colonialEmpty,
+    successImg: IMAGE_URLS.colonialFull,
+    quoteText: "Chúng ta muốn hoà bình, chúng ta phải nhân nhượng.",
+    characterImages: {
+      hochiminh: IMAGE_URLS.hcmDiplomacy,
+      comrade: IMAGE_URLS.comradeDiplomacy,
+      colonial: IMAGE_URLS.colonialSoldier,
+    },
   },
   {
     id: "appeal",
@@ -111,6 +176,11 @@ const SCENES: SceneAsset[] = [
     year: "1966",
     emptyImg: IMAGE_URLS.appealEmpty,
     successImg: IMAGE_URLS.appealFull,
+    quoteText: "Không có gì quý hơn độc lập, tự do.",
+    characterImages: {
+      hochiminh: IMAGE_URLS.hcmAppeal,
+      comrade: IMAGE_URLS.comradeAppeal,
+    },
   },
   {
     id: "testament",
@@ -118,6 +188,11 @@ const SCENES: SceneAsset[] = [
     year: "1969",
     emptyImg: IMAGE_URLS.testamentEmpty,
     successImg: IMAGE_URLS.testamentFull,
+    quoteText: "Toàn Đảng, toàn dân ta đoàn kết phấn đấu.",
+    characterImages: {
+      hochiminh: IMAGE_URLS.hcmTestament,
+      comrade: IMAGE_URLS.comradeTestament,
+    },
   },
 ];
 
@@ -131,6 +206,11 @@ const CHARACTERS: CharacterAsset[] = [
     id: "comrade",
     label: "Đồng chí",
     icon: IMAGE_URLS.comrade,
+  },
+  {
+    id: "colonial",
+    label: "Thực dân",
+    icon: IMAGE_URLS.colonialSoldier,
   },
 ];
 
@@ -177,7 +257,7 @@ const STEPS: StepRule[] = [
     hintText: "Sự kiện này cần một văn kiện mở ra quốc gia mới.",
   },
   {
-    sceneId: "diplomacy",
+    sceneId: "principle",
     characters: ["hochiminh"],
     actions: [],
     successText: "Bất biến: mục tiêu độc lập dân tộc được giữ vững.",
@@ -185,9 +265,10 @@ const STEPS: StepRule[] = [
   },
   {
     sceneId: "diplomacy",
-    characters: ["hochiminh", "comrade"],
+    characters: ["hochiminh", "comrade", "colonial"],
     actions: [],
-    successText: "Vạn biến: sách lược mềm dẻo giúp giữ chính quyền non trẻ.",
+    successText:
+      "Vạn biến: nhận diện sức ép thực dân và chọn sách lược mềm dẻo để giữ chính quyền non trẻ.",
     hintText: "Sau mục tiêu cốt lõi là cách ứng xử mềm dẻo với tình thế.",
   },
   {
@@ -222,9 +303,44 @@ const getCharacter = (id: CharacterId) =>
 const getAction = (id: ActionId) =>
   ACTIONS.find((action) => action.id === id);
 
+const getPanelCharacterImage = (scene: SceneAsset | undefined, id: CharacterId) =>
+  scene?.characterImages[id] || getCharacter(id)?.icon;
+
 const sameSet = <T extends string>(actual: T[], expected: T[]) =>
   actual.length === expected.length &&
   expected.every((item) => actual.includes(item));
+
+const getCharacterFeedback = (
+  panel: PanelState,
+  rule: StepRule,
+  scene: SceneAsset,
+) => {
+  const extraCharacters = panel.characters.filter(
+    (id) => !rule.characters.includes(id),
+  );
+
+  if (extraCharacters.length > 0) {
+    return {
+      outcome: "Nhân vật khiến mạch cảnh bị lệch, nhưng câu nói vẫn gợi đúng tinh thần thời đoạn.",
+      cue: scene.quoteText,
+      isHardError: true,
+    };
+  }
+
+  if (panel.characters.length > 0) {
+    return {
+      outcome: null,
+      cue: scene.quoteText,
+      isHardError: false,
+    };
+  }
+
+  return {
+    outcome: null,
+    cue: null,
+    isHardError: false,
+  };
+};
 
 const evaluatePanel = (panel: PanelState, index: number): PanelResult => {
   const scene = getScene(panel.sceneId);
@@ -236,6 +352,7 @@ const evaluatePanel = (panel: PanelState, index: number): PanelResult => {
       isError: false,
       outcome: null,
       displayImg: null,
+      characterCue: null,
     };
   }
 
@@ -244,11 +361,20 @@ const evaluatePanel = (panel: PanelState, index: number): PanelResult => {
   };
 
   if (panel.sceneId !== rule.sceneId) {
+    const hasPlacedDetails =
+      panel.characters.length > 0 || panel.actions.length > 0;
+    const hasCharacter = panel.characters.length > 0;
+
     return {
       ...baseResult,
       isSuccess: false,
-      isError: true,
-      outcome: "Bối cảnh này chưa khớp với mạch thời gian.",
+      isError: hasPlacedDetails,
+      outcome: hasPlacedDetails
+        ? hasCharacter
+          ? "Nhân vật dừng lại; mạch cảnh đang bị đặt lệch."
+          : "Dòng chữ chưa tạo được mạch lịch sử thuyết phục."
+        : null,
+      characterCue: hasCharacter ? scene.quoteText : null,
     };
   }
 
@@ -261,6 +387,19 @@ const evaluatePanel = (panel: PanelState, index: number): PanelResult => {
       isError: false,
       outcome: rule.successText,
       displayImg: scene.successImg,
+      characterCue: null,
+    };
+  }
+
+  if (!hasExactCharacters) {
+    const feedback = getCharacterFeedback(panel, rule, scene);
+
+    return {
+      ...baseResult,
+      isSuccess: false,
+      isError: feedback.isHardError,
+      outcome: feedback.outcome,
+      characterCue: feedback.cue,
     };
   }
 
@@ -268,18 +407,23 @@ const evaluatePanel = (panel: PanelState, index: number): PanelResult => {
     (id) => !rule.characters.includes(id),
   );
   const hasExtraActions = panel.actions.some((id) => !rule.actions.includes(id));
+  const hasMissingActions = rule.actions.some(
+    (id) => !panel.actions.includes(id),
+  );
 
-  let outcome = rule.hintText;
+  let outcome: string | null = null;
   if (hasExtraCharacters || hasExtraActions) {
-    outcome = "Có một chi tiết đang lệch với tình huống lịch sử.";
+    outcome = "Chi tiết này chưa ăn khớp với cảnh.";
+  } else if (hasMissingActions) {
+    outcome = null;
   }
 
   return {
     ...baseResult,
     isSuccess: false,
-    isError:
-      panel.characters.length > 0 || panel.actions.length > 0 || hasExtraActions,
+    isError: hasExtraCharacters || hasExtraActions,
     outcome,
+    characterCue: panel.characters.length > 0 ? scene.quoteText : null,
   };
 };
 
@@ -325,10 +469,10 @@ export default function Chapter5Page() {
 
     const showOverlayTimer = window.setTimeout(() => {
       setShowVictoryOverlay(true);
-    }, 3000);
+    }, 8000);
     const goHomeTimer = window.setTimeout(() => {
       router.push("/");
-    }, 5600);
+    }, 15000);
 
     return () => {
       window.clearTimeout(showOverlayTimer);
@@ -381,7 +525,7 @@ export default function Chapter5Page() {
         if (!character || !target.sceneId) return prevPanels;
 
         if (!target.characters.includes(character.id)) {
-          target.characters = [...target.characters, character.id].slice(0, 2);
+          target.characters = [...target.characters, character.id].slice(0, 3);
         }
       }
 
@@ -396,6 +540,11 @@ export default function Chapter5Page() {
 
       return nextPanels;
     });
+  };
+
+  const handlePanelDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
   };
 
   const clearPanel = (index: number) => {
@@ -426,6 +575,9 @@ export default function Chapter5Page() {
             const result = panelResults[index];
             const locked = isPanelLocked(index);
             const scene = getScene(panel.sceneId);
+            const shouldShowCharacters =
+              panel.characters.length > 0 &&
+              (!result.isSuccess || panel.sceneId === "principle");
             const hasFlagShimmer =
               result.isSuccess &&
               !!panel.sceneId &&
@@ -435,7 +587,7 @@ export default function Chapter5Page() {
               <motion.div
                 key={index}
                 onDrop={(e) => handleDropToPanel(e, index)}
-                onDragOver={(e) => e.preventDefault()}
+                onDragOver={handlePanelDragOver}
                 animate={
                   result.isError && !result.isSuccess
                     ? { x: [0, -4, 4, -2, 2, 0] }
@@ -469,6 +621,24 @@ export default function Chapter5Page() {
                   >
                     X
                   </button>
+                )}
+
+                {!locked && !result.isSuccess && (
+                  <div
+                    className="absolute inset-0 z-30"
+                    onDrop={(e) => {
+                      e.stopPropagation();
+                      handleDropToPanel(e, index);
+                    }}
+                    onDragOver={(e) => {
+                      e.stopPropagation();
+                      handlePanelDragOver(e);
+                    }}
+                    onDragEnter={(e) => {
+                      e.stopPropagation();
+                      handlePanelDragOver(e);
+                    }}
+                  />
                 )}
 
                 <AnimatePresence mode="wait">
@@ -515,12 +685,37 @@ export default function Chapter5Page() {
                   />
                 )}
 
-                {!result.isSuccess && panel.characters.length > 0 && (
+                {shouldShowCharacters && (
                   <div className="absolute inset-0 z-10 flex items-end justify-center pb-8 px-4 pointer-events-none">
+                    {result.characterCue && (
+                      <motion.div
+                        key={result.characterCue}
+                        initial={{ y: 8, opacity: 0, scale: 0.95 }}
+                        animate={{ y: 0, opacity: 1, scale: 1 }}
+                        className={`absolute top-8 left-1/2 -translate-x-1/2 max-w-[82%] rounded-lg border-2 px-3 py-1 text-center text-[11px] font-bold leading-tight shadow-md ${
+                          result.isError
+                            ? "border-red-200 bg-amber-50/95 text-red-900"
+                            : "border-amber-300 bg-amber-50/95 text-[#5c3f24]"
+                        }`}
+                      >
+                        “{result.characterCue}”
+                        <span
+                          className={`absolute -bottom-2 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-b-2 border-r-2 bg-amber-50/95 ${
+                            result.isError
+                              ? "border-red-200"
+                              : "border-amber-300"
+                          }`}
+                        />
+                      </motion.div>
+                    )}
                     <div className="flex h-[76%] gap-3 w-full justify-center">
                       {panel.characters.map((characterId) => {
                         const character = getCharacter(characterId);
-                        if (!character) return null;
+                        const characterImg = getPanelCharacterImage(
+                          scene,
+                          characterId,
+                        );
+                        if (!character || !characterImg) return null;
 
                         return (
                           <motion.div
@@ -531,7 +726,7 @@ export default function Chapter5Page() {
                             className="h-full relative pointer-events-none"
                           >
                             <img
-                              src={character.icon}
+                              src={characterImg}
                               alt={character.label}
                               className="h-full w-auto object-contain drop-shadow-[2px_2px_5px_rgba(0,0,0,0.5)]"
                             />
