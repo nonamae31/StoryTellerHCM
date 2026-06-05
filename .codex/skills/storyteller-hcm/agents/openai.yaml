@@ -1,0 +1,4 @@
+interface:
+  display_name: "StoryTeller HCM"
+  short_description: "Work on the StoryTellerHCM educational game project."
+  default_prompt: "Use the StoryTeller HCM project skill to inspect, edit, validate, and run this Next.js educational game."
