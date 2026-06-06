@@ -60,7 +60,10 @@ const IMAGE_URLS = {
     "/BookImage/Story5/generated/ch5_comrade_appeal.png",
   comradeTestament:
     "/BookImage/Story5/generated/ch5_comrade_testament.png",
-  colonialSoldier: "/BookImage/Story5/generated/ch5_colonial_soldier.png",
+  colonialSoldier:
+    "https://res.cloudinary.com/di7brya3o/image/upload/e_make_transparent:20/v1780672001/ChatGPT_Image_Jun_5_2026_10_06_23_PM_1_k9hqnx.png",
+  colonialGunner:
+    "https://res.cloudinary.com/di7brya3o/image/upload/e_make_transparent:20/v1780672001/ChatGPT_Image_Jun_5_2026_10_06_24_PM_4_gr0hsi.png",
 };
 
 const WIN_AUDIO_URL =
@@ -71,9 +74,10 @@ type SceneId =
   | "badinh"
   | "principle"
   | "diplomacy"
+  | "battle"
   | "appeal"
   | "testament";
-type CharacterId = "hochiminh" | "comrade" | "colonial";
+type CharacterId = "hochiminh" | "comrade" | "colonial" | "colonialGunner";
 type ActionId = "time" | "declaration" | "freedom";
 
 interface SceneAsset {
@@ -117,7 +121,11 @@ interface PanelResult {
   isError: boolean;
   outcome: string | null;
   displayImg: string | null;
-  characterCue: string | null;
+}
+
+interface ScenarioFeedback {
+  outcome: string | null;
+  isHardError: boolean;
 }
 
 const SCENES: SceneAsset[] = [
@@ -161,13 +169,26 @@ const SCENES: SceneAsset[] = [
     id: "diplomacy",
     label: "Sức ép thực dân",
     year: "1946",
-    emptyImg: IMAGE_URLS.colonialEmpty,
-    successImg: IMAGE_URLS.colonialFull,
+    emptyImg: IMAGE_URLS.diplomacyEmpty,
+    successImg: IMAGE_URLS.diplomacyFull,
     quoteText: "Chúng ta muốn hoà bình, chúng ta phải nhân nhượng.",
     characterImages: {
       hochiminh: IMAGE_URLS.hcmDiplomacy,
       comrade: IMAGE_URLS.comradeDiplomacy,
       colonial: IMAGE_URLS.colonialSoldier,
+      colonialGunner: IMAGE_URLS.colonialGunner,
+    },
+  },
+  {
+    id: "battle",
+    label: "Chiến địa thực dân",
+    year: "1946",
+    emptyImg: IMAGE_URLS.colonialEmpty,
+    successImg: IMAGE_URLS.colonialFull,
+    quoteText: "Chiến trường trực diện đẩy câu chuyện ra khỏi thế sách lược.",
+    characterImages: {
+      colonial: IMAGE_URLS.colonialSoldier,
+      colonialGunner: IMAGE_URLS.colonialGunner,
     },
   },
   {
@@ -212,12 +233,40 @@ const CHARACTERS: CharacterAsset[] = [
     label: "Thực dân",
     icon: IMAGE_URLS.colonialSoldier,
   },
+  {
+    id: "colonialGunner",
+    label: "Lính thực dân",
+    icon: IMAGE_URLS.colonialGunner,
+  },
 ];
 
 const ACTIONS: ActionAsset[] = [
   { id: "time", label: "Thời cơ", shortLabel: "TC" },
   { id: "declaration", label: "Tuyên ngôn", shortLabel: "TN" },
   { id: "freedom", label: "Độc lập tự do", shortLabel: "DL" },
+];
+
+const INVENTORY_SCENE_ORDER: SceneId[] = [
+  "appeal",
+  "battle",
+  "badinh",
+  "principle",
+  "testament",
+  "tantrao",
+  "diplomacy",
+];
+
+const INVENTORY_CHARACTER_ORDER: CharacterId[] = [
+  "colonialGunner",
+  "comrade",
+  "colonial",
+  "hochiminh",
+];
+
+const INVENTORY_ACTION_ORDER: ActionId[] = [
+  "freedom",
+  "declaration",
+  "time",
 ];
 
 const FLAG_SCENE_IDS: SceneId[] = ["tantrao", "badinh", "appeal"];
@@ -239,6 +288,202 @@ const shimmerTransition = {
   duration: 4.8,
   repeat: Infinity,
   ease: "easeInOut" as const,
+};
+
+const WRONG_SCENE_PAIR_SCENARIOS: Record<
+  SceneId,
+  Partial<Record<SceneId, string>>
+> = {
+  tantrao: {
+    badinh:
+      "Lễ đài độc lập xuất hiện quá sớm; lời tổng khởi nghĩa chưa kịp mở đường cho ngày tuyên bố.",
+    principle:
+      "Bàn nguyên tắc làm nhịp khởi nghĩa chậm lại, trong khi thời cơ đang cần hành động quyết đoán.",
+    diplomacy:
+      "Khói súng thực dân kéo căn cứ Tân Trào thành chiến địa, làm mất không khí chuẩn bị lực lượng.",
+    battle:
+      "Chiến địa thực dân đẩy căn cứ chuẩn bị thành đối đầu vũ trang, làm mất nhịp chớp thời cơ.",
+    appeal:
+      "Khẩu hiệu năm 1966 vang lên sai thời đoạn, đẩy mạch 1945 sang một cao trào khác.",
+    testament:
+      "Không khí tổng kết cuối đời làm khoảnh khắc chuẩn bị Tổng khởi nghĩa lắng xuống quá sớm.",
+  },
+  badinh: {
+    tantrao:
+      "Căn cứ địa vẫn là nơi chuẩn bị, chưa tạo được không gian chính danh để khai sinh quốc gia.",
+    principle:
+      "Bàn ngoại giao làm lễ độc lập mất sức nặng trước quốc dân.",
+    diplomacy:
+      "Thế đối đầu quân sự lấn vào lễ đài, khiến khoảnh khắc tuyên bố chủ quyền biến thành chiến sự.",
+    battle:
+      "Khói súng và đội quân thực dân chen vào lễ đài, khiến ngày độc lập mất không gian chính danh.",
+    appeal:
+      "Âm hưởng kháng chiến về sau làm ngày 2/9 lệch khỏi thời khắc khai sinh nước mới.",
+    testament:
+      "Di sản cuối đời kéo buổi lễ độc lập thành lời tổng kết, sai nhịp lịch sử.",
+  },
+  principle: {
+    tantrao:
+      "Không khí khởi nghĩa làm nguyên tắc chiến lược bị cuốn vào hành động tức thời.",
+    badinh:
+      "Lễ tuyên bố chủ quyền đã là kết quả, còn ô này cần giữ trục nguyên tắc trước sức ép.",
+    diplomacy:
+      "Chiến trường khiến 'bất biến' bị hiểu thành phản ứng trước súng đạn.",
+    battle:
+      "Chiến địa trực diện làm nguyên tắc 'bất biến' bị biến thành phản ứng quân sự.",
+    appeal:
+      "Chân lý kháng chiến làm bàn nguyên tắc bị đẩy sang cao trào năm 1966.",
+    testament:
+      "Lời gửi lại tương lai làm bước giữ nguyên tắc năm 1946 bị kết thúc quá sớm.",
+  },
+  diplomacy: {
+    tantrao:
+      "Căn cứ địa chưa cho thấy sức ép đối ngoại trực diện cần xử lý bằng sách lược.",
+    badinh:
+      "Lễ độc lập làm thế thực dân bị che đi, trong khi ô này cần đặt đối phương lên bàn cờ.",
+    principle:
+      "Chỉ có nguyên tắc mà chưa có sức ép cụ thể, nước cờ 'vạn biến' chưa có đất diễn.",
+    battle:
+      "Trận địa nóng đẩy sách lược ngoại giao thẳng sang đối đầu, làm mất khoảng mềm dẻo để xoay chuyển tình thế.",
+    appeal:
+      "Khí thế kháng chiến làm tình thế ngoại giao non trẻ chuyển thành lời hiệu triệu.",
+    testament:
+      "Không khí Di chúc làm thế đối đầu thực dân mất tính cấp bách.",
+  },
+  appeal: {
+    tantrao:
+      "Căn cứ khởi nghĩa năm 1945 chưa mang tầm chân lý kháng chiến năm 1966.",
+    badinh:
+      "Lễ độc lập là khoảnh khắc khai sinh quốc gia, không phải lời hiệu triệu thời chiến kéo dài.",
+    principle:
+      "Bàn nguyên tắc làm lời kêu gọi mất âm hưởng toàn dân.",
+    diplomacy:
+      "Chiến trường cụ thể thu hẹp chân lý 'độc lập, tự do' thành một trận địa.",
+    battle:
+      "Trận đánh cụ thể thu hẹp lời hiệu triệu 'độc lập, tự do' thành một cảnh chiến sự trước mắt.",
+    testament:
+      "Di chúc là lời gửi lại, còn ô này cần tiếng gọi đang vang lên giữa kháng chiến.",
+  },
+  testament: {
+    tantrao:
+      "Khí thế mở đầu cách mạng kéo phần kết trở lại điểm xuất phát.",
+    badinh:
+      "Lễ khai sinh nước mới chưa phải không khí lắng lại của lời gửi cho tương lai.",
+    principle:
+      "Bàn nguyên tắc vẫn là sách lược đang vận động, chưa phải di sản cuối đời.",
+    diplomacy:
+      "Chiến sự làm Di chúc thành cảnh đối đầu, mất chiều sâu đoàn kết và tương lai.",
+    battle:
+      "Khói súng kéo Di chúc về một trận địa, làm mất nhịp lắng lại của lời gửi cho tương lai.",
+    appeal:
+      "Chân lý kháng chiến vẫn đang hiệu triệu, còn Di chúc cần một nhịp tổng kết.",
+  },
+  battle: {
+    tantrao:
+      "Căn cứ khởi nghĩa đưa chiến địa về bước chuẩn bị, chưa tạo được sức ép đối phương trực diện.",
+    badinh:
+      "Lễ độc lập làm chiến địa bị chuyển thành khoảnh khắc chính danh, không còn là đối đầu quân sự.",
+    principle:
+      "Bàn nguyên tắc làm chiến địa mất sức ép súng đạn đang hiện hữu trước mắt.",
+    diplomacy:
+      "Bàn ngoại giao kéo trận địa về thế thương lượng, làm mờ cảnh đối đầu vũ trang.",
+    appeal:
+      "Lời hiệu triệu kháng chiến mở rộng trận địa thành chân lý toàn dân, lệch khỏi cảnh chiến đấu cụ thể.",
+    testament:
+      "Di chúc làm chiến địa lắng xuống thành lời tổng kết, sai với nhịp đối đầu trước mắt.",
+  },
+};
+
+const WRONG_CHARACTER_PAIR_SCENARIOS: Partial<
+  Record<SceneId, Partial<Record<CharacterId, string>>>
+> = {
+  tantrao: {
+    colonial:
+      "Bóng thực dân kéo căn cứ bí mật vào thế giao tranh, làm mất không khí chuẩn bị Tổng khởi nghĩa.",
+    colonialGunner:
+      "Lính thực dân có súng làm căn cứ bí mật chuyển thành giao chiến sớm, trong khi nhịp này cần giữ lực lượng và chớp thời cơ.",
+  },
+  badinh: {
+    colonial:
+      "Sự hiện diện của thực dân biến lễ độc lập thành đối đầu quân sự.",
+    colonialGunner:
+      "Lính thực dân cầm súng phá vỡ không khí lễ đài, biến tuyên bố chủ quyền thành thế áp chế quân sự.",
+  },
+  principle: {
+    comrade:
+      "Cuộc bàn bạc tập thể làm lời giữ nguyên tắc mất tính quyết đoán cá nhân.",
+    colonial:
+      "Áp lực thực dân lấn vào bàn nguyên tắc, khiến 'bất biến' bị hiểu thành phản ứng trước súng đạn.",
+    colonialGunner:
+      "Súng đạn đặt lên bàn nguyên tắc làm 'bất biến' bị kéo về phản ứng chiến thuật.",
+  },
+  diplomacy: {
+    colonialGunner:
+      "Lính vũ trang làm thế ngoại giao non trẻ mất khoảng thương lượng, đẩy sách lược 1946 thành đối đầu trực diện.",
+  },
+  appeal: {
+    comrade:
+      "Cảnh chuyển thành bàn bạc hậu phương, trong khi lời kêu gọi cần vang trước toàn dân.",
+    colonial:
+      "Đối phương kéo chân lý năm 1966 về một trận địa cụ thể.",
+    colonialGunner:
+      "Hình ảnh lính cầm súng thu hẹp chân lý độc lập tự do thành một trận địa cụ thể, không còn vang như lời hiệu triệu toàn dân.",
+  },
+  testament: {
+    comrade:
+      "Sự xuất hiện của đồng chí làm khoảnh khắc Di chúc riêng tư thành một cuộc họp.",
+    colonial:
+      "Bóng đối phương làm Di chúc thành cảnh chiến sự, không còn là lời gửi lại cho tương lai.",
+    colonialGunner:
+      "Lính vũ trang kéo Di chúc vào khung chiến sự, làm mất chiều sâu đoàn kết và tương lai.",
+  },
+};
+
+const WRONG_ACTION_PAIR_SCENARIOS: Partial<
+  Record<SceneId, Partial<Record<ActionId, string>>>
+> = {
+  tantrao: {
+    declaration:
+      "Tuyên ngôn đến quá sớm; chính quyền chưa kịp được giành về tay nhân dân.",
+    freedom:
+      "Chân lý kháng chiến vang sai thời điểm, làm mờ nhiệm vụ chớp thời cơ.",
+  },
+  badinh: {
+    time:
+      "Thời cơ đã được chớp trước đó; lễ đài cần lời xác lập chủ quyền.",
+    freedom:
+      "Khẩu hiệu kháng chiến làm ngày độc lập lệch sang tinh thần năm 1966.",
+  },
+  principle: {
+    time:
+      "Thời cơ thúc đẩy hành động, còn cảnh này cần giữ trục nguyên tắc.",
+    declaration:
+      "Tuyên ngôn là lời khai sinh quốc gia, không phải sách lược giữ nguyên tắc.",
+    freedom:
+      "Chân lý lớn làm bàn nguyên tắc bị đẩy sang một cao trào khác.",
+  },
+  diplomacy: {
+    time:
+      "Chớp thời cơ khiến thế ngoại giao bị xử lý như một cuộc nổi dậy.",
+    declaration:
+      "Lời tuyên bố chủ quyền không giải được thế đối phương đang ép sát.",
+    freedom:
+      "Chân lý đúng nhưng quá rộng, chưa thể hiện nước cờ mềm dẻo trước sức ép.",
+  },
+  appeal: {
+    time:
+      "Thời cơ 1945 làm lời hiệu triệu 1966 bị kéo về một bước mở đầu khác.",
+    declaration:
+      "Tuyên ngôn khai sinh quốc gia, còn cảnh này cần chân lý nuôi ý chí kháng chiến.",
+  },
+  testament: {
+    time:
+      "Thời cơ mở đầu cách mạng làm phần kết bị kéo ngược về điểm xuất phát.",
+    declaration:
+      "Tuyên ngôn là lời khai sinh, còn Di chúc là lời gửi lại.",
+    freedom:
+      "Chân lý đã vang lên trong kháng chiến; phần cuối cần lắng lại thành di sản.",
+  },
 };
 
 const STEPS: StepRule[] = [
@@ -310,19 +555,36 @@ const sameSet = <T extends string>(actual: T[], expected: T[]) =>
   actual.length === expected.length &&
   expected.every((item) => actual.includes(item));
 
+const getWrongSceneOutcome = (
+  expected: SceneId,
+  actual: SceneId,
+): string | null =>
+  actual === expected
+    ? null
+    : WRONG_SCENE_PAIR_SCENARIOS[expected]?.[actual] ?? null;
+
+const getWrongActionOutcome = (
+  sceneId: SceneId,
+  actionId: ActionId,
+): string | null => WRONG_ACTION_PAIR_SCENARIOS[sceneId]?.[actionId] ?? null;
+
 const getCharacterFeedback = (
   panel: PanelState,
   rule: StepRule,
   scene: SceneAsset,
-) => {
+): ScenarioFeedback => {
   const extraCharacters = panel.characters.filter(
     (id) => !rule.characters.includes(id),
   );
 
   if (extraCharacters.length > 0) {
+    const outcome =
+      extraCharacters
+        .map((id) => WRONG_CHARACTER_PAIR_SCENARIOS[scene.id]?.[id])
+        .find((scenario): scenario is string => Boolean(scenario)) ?? null;
+
     return {
-      outcome: "Nhân vật khiến mạch cảnh bị lệch, nhưng câu nói vẫn gợi đúng tinh thần thời đoạn.",
-      cue: scene.quoteText,
+      outcome,
       isHardError: true,
     };
   }
@@ -330,14 +592,12 @@ const getCharacterFeedback = (
   if (panel.characters.length > 0) {
     return {
       outcome: null,
-      cue: scene.quoteText,
       isHardError: false,
     };
   }
 
   return {
     outcome: null,
-    cue: null,
     isHardError: false,
   };
 };
@@ -352,7 +612,6 @@ const evaluatePanel = (panel: PanelState, index: number): PanelResult => {
       isError: false,
       outcome: null,
       displayImg: null,
-      characterCue: null,
     };
   }
 
@@ -363,18 +622,14 @@ const evaluatePanel = (panel: PanelState, index: number): PanelResult => {
   if (panel.sceneId !== rule.sceneId) {
     const hasPlacedDetails =
       panel.characters.length > 0 || panel.actions.length > 0;
-    const hasCharacter = panel.characters.length > 0;
 
     return {
       ...baseResult,
       isSuccess: false,
       isError: hasPlacedDetails,
       outcome: hasPlacedDetails
-        ? hasCharacter
-          ? "Nhân vật dừng lại; mạch cảnh đang bị đặt lệch."
-          : "Dòng chữ chưa tạo được mạch lịch sử thuyết phục."
+        ? getWrongSceneOutcome(rule.sceneId, scene.id)
         : null,
-      characterCue: hasCharacter ? scene.quoteText : null,
     };
   }
 
@@ -387,7 +642,6 @@ const evaluatePanel = (panel: PanelState, index: number): PanelResult => {
       isError: false,
       outcome: rule.successText,
       displayImg: scene.successImg,
-      characterCue: null,
     };
   }
 
@@ -399,7 +653,6 @@ const evaluatePanel = (panel: PanelState, index: number): PanelResult => {
       isSuccess: false,
       isError: feedback.isHardError,
       outcome: feedback.outcome,
-      characterCue: feedback.cue,
     };
   }
 
@@ -413,7 +666,12 @@ const evaluatePanel = (panel: PanelState, index: number): PanelResult => {
 
   let outcome: string | null = null;
   if (hasExtraCharacters || hasExtraActions) {
-    outcome = "Chi tiết này chưa ăn khớp với cảnh.";
+    const firstWrongAction = panel.actions.find(
+      (id) => !rule.actions.includes(id),
+    );
+    outcome = firstWrongAction
+      ? getWrongActionOutcome(scene.id, firstWrongAction)
+      : null;
   } else if (hasMissingActions) {
     outcome = null;
   }
@@ -423,7 +681,6 @@ const evaluatePanel = (panel: PanelState, index: number): PanelResult => {
     isSuccess: false,
     isError: hasExtraCharacters || hasExtraActions,
     outcome,
-    characterCue: panel.characters.length > 0 ? scene.quoteText : null,
   };
 };
 
@@ -525,7 +782,7 @@ export default function Chapter5Page() {
         if (!character || !target.sceneId) return prevPanels;
 
         if (!target.characters.includes(character.id)) {
-          target.characters = [...target.characters, character.id].slice(0, 3);
+          target.characters = [...target.characters, character.id].slice(0, 4);
         }
       }
 
@@ -562,15 +819,15 @@ export default function Chapter5Page() {
   };
 
   return (
-    <div className="flex-1 flex flex-col relative z-10 w-full h-full">
-      <div className="flex items-center justify-center pt-8 pb-2">
-        <h2 className="text-3xl font-serif text-[#4a4036] font-bold tracking-wide text-center">
+    <div className="flex-1 min-h-0 flex flex-col relative z-10 w-full h-full overflow-hidden">
+      <div className="flex shrink-0 items-center justify-center pt-4 pb-1 px-4">
+        <h2 className="text-[clamp(1.25rem,2.5vw,1.875rem)] font-serif text-[#4a4036] font-bold tracking-wide text-center leading-tight">
           Chương 5: Hiện thực hóa Tư tưởng và Chân lý Thời đại
         </h2>
       </div>
 
-      <div className="flex-1 px-16 pt-2 pb-4">
-        <div className="grid grid-cols-3 grid-rows-2 gap-x-6 gap-y-4 h-full">
+      <div className="flex-1 min-h-0 px-5 sm:px-8 lg:px-14 pt-1 pb-2">
+        <div className="grid grid-cols-3 grid-rows-2 gap-x-3 sm:gap-x-5 gap-y-3 h-full min-h-0">
           {panels.map((panel, index) => {
             const result = panelResults[index];
             const locked = isPanelLocked(index);
@@ -686,29 +943,18 @@ export default function Chapter5Page() {
                 )}
 
                 {shouldShowCharacters && (
-                  <div className="absolute inset-0 z-10 flex items-end justify-center pb-8 px-4 pointer-events-none">
-                    {result.characterCue && (
-                      <motion.div
-                        key={result.characterCue}
-                        initial={{ y: 8, opacity: 0, scale: 0.95 }}
-                        animate={{ y: 0, opacity: 1, scale: 1 }}
-                        className={`absolute top-8 left-1/2 -translate-x-1/2 max-w-[82%] rounded-lg border-2 px-3 py-1 text-center text-[11px] font-bold leading-tight shadow-md ${
-                          result.isError
-                            ? "border-red-200 bg-amber-50/95 text-red-900"
-                            : "border-amber-300 bg-amber-50/95 text-[#5c3f24]"
-                        }`}
-                      >
-                        “{result.characterCue}”
-                        <span
-                          className={`absolute -bottom-2 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-b-2 border-r-2 bg-amber-50/95 ${
-                            result.isError
-                              ? "border-red-200"
-                              : "border-amber-300"
-                          }`}
-                        />
-                      </motion.div>
-                    )}
-                    <div className="flex h-[76%] gap-3 w-full justify-center">
+                  <div
+                    className={`absolute inset-0 z-10 flex items-end justify-center px-3 pointer-events-none ${
+                      result.outcome ? "pb-12" : "pb-5"
+                    }`}
+                  >
+                    <div
+                      className={`flex w-full justify-center ${
+                        panel.characters.length >= 3
+                          ? "h-[58%] gap-1.5"
+                          : "h-[70%] gap-2.5"
+                      }`}
+                    >
                       {panel.characters.map((characterId) => {
                         const character = getCharacter(characterId);
                         const characterImg = getPanelCharacterImage(
@@ -762,7 +1008,7 @@ export default function Chapter5Page() {
                     key={result.outcome}
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    className={`absolute bottom-0 w-full min-h-[38px] backdrop-blur-sm flex items-center justify-center z-20 px-2 py-1 ${
+                    className={`absolute bottom-0 w-full min-h-[34px] max-h-[58px] overflow-y-auto backdrop-blur-sm flex items-center justify-center z-20 px-2 py-1 ${
                       result.isSuccess
                         ? "bg-emerald-900/80"
                         : result.isError
@@ -770,7 +1016,7 @@ export default function Chapter5Page() {
                           : "bg-black/70"
                     }`}
                   >
-                    <span className="text-white text-[12px] font-medium leading-tight tracking-wide text-center drop-shadow-md">
+                    <span className="text-white text-[11px] sm:text-[12px] font-medium leading-tight tracking-wide text-center drop-shadow-md">
                       {result.outcome}
                     </span>
                   </motion.div>
@@ -781,69 +1027,88 @@ export default function Chapter5Page() {
         </div>
       </div>
 
-      <div className="h-[140px] mt-4 mx-12 border-t-[3px] border-double border-[#c2a878]/60 flex items-center justify-center gap-5 bg-white/10 rounded-t-2xl overflow-x-auto px-4">
-        {SCENES.map((scene) => (
-          <div
-            key={scene.id}
-            draggable
-            onDragStart={(e) => handleDragStart(e, "scene", scene.id)}
-            className="flex flex-col items-center cursor-grab hover:scale-110 active:cursor-grabbing flex-shrink-0"
-          >
-            <div className="w-16 h-16 rounded-lg border-2 border-dashed border-[#a69279] bg-[#e8dbb9] mb-1 flex items-center justify-center shadow-md overflow-hidden">
-              <img
-                src={scene.emptyImg}
-                alt={scene.label}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <span className="font-serif text-[#5c4a3d] font-bold text-xs text-center leading-tight max-w-[74px]">
-              {scene.label}
-            </span>
-            <span className="text-[10px] text-[#7a6554]">{scene.year}</span>
-          </div>
-        ))}
+      <div className="h-[118px] shrink-0 mt-2 mx-4 sm:mx-8 border-t-[3px] border-double border-[#c2a878]/60 flex items-start justify-start gap-3 sm:gap-4 bg-white/10 rounded-t-2xl overflow-x-auto overflow-y-hidden px-3 py-2">
+        {INVENTORY_SCENE_ORDER.map((sceneId) => {
+          const scene = getScene(sceneId);
+          if (!scene) return null;
 
-        <div className="w-[2px] h-16 bg-[#c2a878]/40 mx-1 flex-shrink-0" />
-
-        {CHARACTERS.map((character) => (
-          <div
-            key={character.id}
-            draggable
-            onDragStart={(e) => handleDragStart(e, "character", character.id)}
-            className="flex flex-col items-center cursor-grab hover:scale-110 active:cursor-grabbing flex-shrink-0"
-          >
-            <div className="w-14 h-14 rounded-full border-2 border-[#a69279] bg-[#e8dbb9] mb-1 flex items-center justify-center shadow-md overflow-hidden">
-              <img
-                src={character.icon}
-                alt={character.label}
-                className="w-full h-full object-contain"
-              />
-            </div>
-            <span className="font-serif text-[#5c4a3d] font-bold text-xs text-center leading-tight max-w-[70px]">
-              {character.label}
-            </span>
-          </div>
-        ))}
-
-        <div className="w-[2px] h-16 bg-[#c2a878]/40 mx-1 flex-shrink-0" />
-
-        {ACTIONS.map((action) => (
-          <div
-            key={action.id}
-            draggable
-            onDragStart={(e) => handleDragStart(e, "action", action.id)}
-            className="flex flex-col items-center cursor-grab hover:scale-110 active:cursor-grabbing flex-shrink-0"
-          >
-            <div className="w-12 h-12 rounded bg-amber-100 border-2 border-dashed border-amber-600 mb-1 flex items-center justify-center shadow-md">
-              <span className="text-sm font-black text-amber-900">
-                {action.shortLabel}
+          return (
+            <div
+              key={scene.id}
+              draggable
+              onDragStart={(e) => handleDragStart(e, "scene", scene.id)}
+              className="flex w-[72px] sm:w-[82px] flex-col items-center cursor-grab hover:scale-105 active:cursor-grabbing flex-shrink-0 transition-transform"
+            >
+              <div className="w-14 h-12 sm:w-16 sm:h-14 rounded-lg border-2 border-dashed border-[#a69279] bg-[#e8dbb9] mb-1 flex items-center justify-center shadow-md overflow-hidden">
+                <img
+                  src={scene.emptyImg}
+                  alt={scene.label}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <span className="font-serif text-[#5c4a3d] font-bold text-[10px] sm:text-[11px] text-center leading-tight w-full break-words">
+                {scene.label}
+              </span>
+              <span className="text-[9px] sm:text-[10px] text-[#7a6554] leading-none">
+                {scene.year}
               </span>
             </div>
-            <span className="font-serif text-[#5c4a3d] font-bold text-xs text-center max-w-[76px] leading-tight">
-              {action.label}
-            </span>
-          </div>
-        ))}
+          );
+        })}
+
+        <div className="w-[2px] h-14 bg-[#c2a878]/40 mx-1 flex-shrink-0" />
+
+        {INVENTORY_CHARACTER_ORDER.map((characterId) => {
+          const character = getCharacter(characterId);
+          if (!character) return null;
+
+          return (
+            <div
+              key={character.id}
+              draggable
+              onDragStart={(e) =>
+                handleDragStart(e, "character", character.id)
+              }
+              className="flex w-[66px] sm:w-[76px] flex-col items-center cursor-grab hover:scale-105 active:cursor-grabbing flex-shrink-0 transition-transform"
+            >
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 border-[#a69279] bg-[#e8dbb9] mb-1 flex items-center justify-center shadow-md overflow-hidden">
+                <img
+                  src={character.icon}
+                  alt={character.label}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <span className="font-serif text-[#5c4a3d] font-bold text-[10px] sm:text-[11px] text-center leading-tight w-full break-words">
+                {character.label}
+              </span>
+            </div>
+          );
+        })}
+
+        <div className="w-[2px] h-14 bg-[#c2a878]/40 mx-1 flex-shrink-0" />
+
+        {INVENTORY_ACTION_ORDER.map((actionId) => {
+          const action = getAction(actionId);
+          if (!action) return null;
+
+          return (
+            <div
+              key={action.id}
+              draggable
+              onDragStart={(e) => handleDragStart(e, "action", action.id)}
+              className="flex w-[66px] sm:w-[78px] flex-col items-center cursor-grab hover:scale-105 active:cursor-grabbing flex-shrink-0 transition-transform"
+            >
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded bg-amber-100 border-2 border-dashed border-amber-600 mb-1 flex items-center justify-center shadow-md">
+                <span className="text-xs sm:text-sm font-black text-amber-900">
+                  {action.shortLabel}
+                </span>
+              </div>
+              <span className="font-serif text-[#5c4a3d] font-bold text-[10px] sm:text-[11px] text-center w-full leading-tight break-words">
+                {action.label}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
       <AnimatePresence>
