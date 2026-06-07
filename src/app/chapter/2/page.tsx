@@ -1,9 +1,8 @@
 /* eslint-disable react-hooks/static-components */
 "use client";
-
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useEffect, type DragEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 
 // ==========================================
@@ -13,31 +12,31 @@ const CHAPTER_2_ASSETS = {
   scenes: [
     {
       id: "loom",
-      label: "Xưởng Dệt",
-      icon: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773146957/xuongdet_jr1zao.jpg",
-      bg: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773146957/xuongdet_jr1zao.jpg",
+      label: "Bến Nhà Rồng",
+      icon: "https://res.cloudinary.com/dfp5ackxp/image/upload/v1780587194/bennharong_q79ucf.png",
+      bg: "https://res.cloudinary.com/dfp5ackxp/image/upload/v1780587194/bennharong_q79ucf.png",
     },
     {
       id: "market",
-      label: "Cái Chợ",
-      icon: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773148784/cho_i1jc21.jpg",
-      bg: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773148784/cho_i1jc21.jpg",
+      label: "Hội nghị Vécxây",
+      icon: "https://res.cloudinary.com/dfp5ackxp/image/upload/v1780587194/hoinghivecxay_gzaszq.png",
+      bg: "https://res.cloudinary.com/dfp5ackxp/image/upload/v1780587194/hoinghivecxay_gzaszq.png",
     },
   ],
   characters: [
-    { id: "weaver", label: "Thợ Dệt", icon: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773146178/thodet_sgm2f6.jpg" },
-    { id: "merchant", label: "Thương Nhân", icon: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773150391/merchant_sbgqcc.jpg" },
-    { id: "concrete_labor", label: "Lao Động Cụ Thể", icon: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773210250/ldtrutuong_pvc3pd.jpg" },
-    { id: "abstract_labor", label: "Lao Động Trừu Tượng", icon: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773209181/dhc_wsagrg.jpg" },
-    { id: "use_value", label: "Giá Trị Sử Dụng", icon: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773209619/Gemini_Generated_Image_h70llvh70llvh70l_aqjiyt.png" },
-    { id: "value", label: "Giá Trị", icon: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773210128/xu_orhnpw.jpg" },
+    { id: "weaver", label: "Nguyễn Tất Thành", icon: "https://res.cloudinary.com/dfp5ackxp/image/upload/v1780671533/aac469f2-390c-4da5-bd1a-6742f05eb5e6_ssjpg6.png" },
+    { id: "merchant", label: "Chủ nghĩa đế quốc", icon: "https://res.cloudinary.com/dfp5ackxp/image/upload/v1780671534/fed207a3-d090-4a9a-9e62-c1b90ea2bd5a_ikpbt1.png" },
+    { id: "concrete_labor", label: "Khảo sát thực tiễn", icon: "https://res.cloudinary.com/dfp5ackxp/image/upload/v1780671773/79f5b95f-f0a2-435e-af5a-381e4ab690cf_jfnaq4.png" },
+    { id: "abstract_labor", label: "Luận cương Lênin", icon: "https://res.cloudinary.com/dfp5ackxp/image/upload/v1780671997/a37f0a86-0f7d-4e4d-88ed-bb2b15b82ff0_ix9zmw.png" },
+    { id: "use_value", label: "Yêu sách nhân dân", icon: "https://res.cloudinary.com/dfp5ackxp/image/upload/v1780672153/804089ab-b893-4de1-b750-505dd2aad869_qav8hf.png" },
+    { id: "value", label: "Đường cách mạng vô sản", icon: "https://res.cloudinary.com/dfp5ackxp/image/upload/v1780672272/e3b4ca09-f141-4895-b117-5999e81634e9_spsziu.png" },
   ],
 };
 
 const CHAR_STATES = {
   weaver: {
     idle: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773134691/Gemini_Generated_Image_bwcghobwcghobwcg_yy63mz.png",
-    working: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773146588/td_ss_lamviec_uqvjfj.png",
+    working: "https://res.cloudinary.com/dfp5ackxp/image/upload/v1780672678/64c9bfaa-1859-4b1c-bc1c-1d9c84254472_mtpnsp.png",
     tired: "/BookImage/Story2/Weaver_Tired.png",
     happy: "/BookImage/Story2/Weaver_Happy.png",
     confused: "",
@@ -55,26 +54,26 @@ const CHAR_STATES = {
 // ==========================================
 const COMPOSITE_BG = {
   loom: {
-    weaverIdle: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773146784/thodetdungyen_wfqcir.jpg",
-    weaverWorking: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773146588/td_ss_lamviec_uqvjfj.png",
-    weaverTired: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773148684/weavertruutuong_phfbjr.jpg",
+    weaverIdle: "https://res.cloudinary.com/dfp5ackxp/image/upload/v1780672678/64c9bfaa-1859-4b1c-bc1c-1d9c84254472_mtpnsp.png",
+    weaverWorking: "https://res.cloudinary.com/dfp5ackxp/image/upload/v1780671773/79f5b95f-f0a2-435e-af5a-381e4ab690cf_jfnaq4.png",
+    weaverTired: "https://res.cloudinary.com/dfp5ackxp/image/upload/v1780673151/bad8239d-c53b-496d-903d-c39fe40df8dc_sklwmd.png",
     // Lỗi ở xưởng: weaver confused (thiếu điều kiện, kết hợp sai, khái niệm chợ lạc vào)
-    weaverConfused: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773147548/thodetboiroioxuong_w7p7ps.jpg",
+    weaverConfused: "https://res.cloudinary.com/dfp5ackxp/image/upload/v1780673546/af0316e7-8633-4363-8f36-77c91a3365ce_ac0cdn.png",
     // Thương nhân lạc vào xưởng
-    merchantLost: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773150348/mercon_hz1pji.jpg",
+    merchantLost: "https://res.cloudinary.com/dfp5ackxp/image/upload/v1780674054/7d65c963-2cd3-4251-9288-476a2371e647_wenqjl.png",
   },
   market: {
     merchantIdle: "/BookImage/Story2/Scene_MerchantIdle.png",
-    merchantUseValue: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773210936/tngtsd_lkargl.jpg",
-    merchantValue: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773409586/gtsd_oihe6d.jpg",
-    tradeComplete: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773212147/end_nncask.jpg",
-    tradeMissingConditions: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773414123/buon_fwalzv.jpg", // Todo: thêm link ảnh khi chưa hoàn thành panel 4 và 5 mà đã ghép ending
+    merchantUseValue: "https://res.cloudinary.com/dfp5ackxp/image/upload/v1780674899/a5c614c1-6d34-4128-ab49-d7ac83f3f38a_bzozul.png",
+    merchantValue: "https://res.cloudinary.com/dfp5ackxp/image/upload/v1780676058/a0e95bb9-a8a8-433e-9fa4-7fe24540d23e_hmyv1l.png",
+    tradeComplete: "https://res.cloudinary.com/dfp5ackxp/image/upload/v1780676267/bfa6ab78-a8ad-4ff4-b9a9-5fad48077d4c_tbebqy.png",
+    tradeMissingConditions: "https://res.cloudinary.com/dfp5ackxp/image/upload/v1780676367/c1c6892e-4398-480f-945c-3d03d2fb5708_g7qeyx.png", // Todo: thêm link ảnh khi chưa hoàn thành panel 4 và 5 mà đã ghép ending
     // Merchant thiếu điều kiện / lỗi chợ chung
-    merchantAngry: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773208403/tnboiroi_f6z3ey.jpg",
+    merchantAngry: "https://res.cloudinary.com/dfp5ackxp/image/upload/v1780675372/b2d6b3ae-5171-42de-b61c-39ee2604c204_dmrgkk.png",
     // Thợ dệt lạc vào chợ đơn độc
-    weaverLost: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773219458/tdkh_r2zo6g.jpg",
+    weaverLost: "https://res.cloudinary.com/dfp5ackxp/image/upload/v1780675590/399b93ad-cfa1-465b-94a9-6a62c9d152e7_lk3qi2.png",
     // Thợ dệt và thương nhân cùng bối rối
-    weaverAndMerchantConfused: "https://res.cloudinary.com/dcjcoyu2d/image/upload/v1773413458/tntd_mtrvfq.jpg", // Placeholder link, please update
+    weaverAndMerchantConfused: "https://res.cloudinary.com/dfp5ackxp/image/upload/v1780674444/f2baddee-78f1-47f7-ba13-c8d8fad36767_tdjlun.png", // Placeholder link, please update
   },
 };
 
@@ -264,48 +263,48 @@ function computePanels(panels: PanelState[]): {
       // Khái niệm thuộc chợ bị kéo vào xưởng
       if (hasUseValueInPanel || hasValueInPanel) {
         if (hasWeaver) stateMap["weaver"] = CHAR_STATES.weaver.confused;
-        outcomes[i] = "Giá trị và Giá trị sử dụng thuộc về Cái Chợ, không phải Xưởng Dệt!";
+        outcomes[i] = "Yêu sách và đường lối cách mạng chưa thể đặt tại Bến Nhà Rồng. Hãy đi ra thế giới tìm chân lý.";
 
-        // Thương nhân lạc vào xưởng
+        // Chủ nghĩa đế quốc lạc vào Bến Nhà Rồng
       } else if (hasMerchant) {
         stateMap["merchant"] = CHAR_STATES.merchant.confused;
-        outcomes[i] = "Thương nhân: 'Tôi không biết dệt vải!'";
+        outcomes[i] = "Chủ nghĩa đế quốc không thuộc Bến Nhà Rồng. Nguyễn Tất Thành cần tiếp tục hành trình.";
 
         // Lao động không có thợ
       } else if (!hasWeaver && (hasConcreteInPanel || hasAbstractInPanel)) {
-        outcomes[i] = "Lao động cần có Thợ Dệt thực hiện!";
+        outcomes[i] = "Hành trình phải có Nguyễn Tất Thành thực hiện!";
 
         // Cả concrete lẫn abstract cùng 1 panel
       } else if (hasWeaver && hasConcreteInPanel && hasAbstractInPanel) {
         stateMap["weaver"] = CHAR_STATES.weaver.confused;
-        outcomes[i] = "Hãy tách riêng: đặt 'Lao Động Cụ Thể' và 'Lao Động Trừu Tượng' ở 2 panel khác nhau!";
+        outcomes[i] = "Khảo sát thực tiễn và Luận cương Lênin phải được đặt ở hai giai đoạn khác nhau của hành trình.";
 
         // Panel 1: chỉ có Thợ Dệt
       } else if (hasWeaver && !hasConcreteInPanel && !hasAbstractInPanel) {
         stateMap["weaver"] = CHAR_STATES.weaver.idle;
-        outcomes[i] = "Thợ dệt vào xưởng, sẵn sàng làm việc!";
+        outcomes[i] = "Nguyễn Tất Thành rời Bến Nhà Rồng năm 1911.";
 
         // Panel 2: Thợ Dệt + Lao Động Cụ Thể
       } else if (hasWeaver && hasConcreteInPanel) {
         stateMap["weaver"] = CHAR_STATES.weaver.working;
         hasConcreteLabor = true;
-        outcomes[i] = "Lao động cụ thể: hành động dệt tạo ra chiếc áo !";
+        outcomes[i] = "Làm việc trên tàu và khảo sát thực tiễn ở Pháp, Anh, Mỹ và châu Phi.";
 
         // Panel 3: Thợ Dệt + Lao Động Trừu Tượng
       } else if (hasWeaver && hasAbstractInPanel) {
         if (hasConcreteLabor) {
           stateMap["weaver"] = CHAR_STATES.weaver.tired;
           hasAbstractLabor = true;
-          outcomes[i] = "Lao động trừu tượng: sức lực hao phí kết tinh thành Giá Trị!";
+          outcomes[i] = "Đọc Luận cương của Lênin và tìm ra con đường cách mạng vô sản.";
         } else {
           stateMap["weaver"] = CHAR_STATES.weaver.confused;
-          outcomes[i] = "Chưa có lao động cụ thể! Hãy đặt 'Lao Động Cụ Thể' ở bước trước.";
+          outcomes[i] = "Cần khảo sát thực tiễn trước khi tiếp cận Luận cương Lênin.";
         }
 
         // Fallback xưởng
       } else {
         if (hasWeaver) stateMap["weaver"] = CHAR_STATES.weaver.confused;
-        outcomes[i] = "Kết hợp này không hợp lệ trong Xưởng Dệt.";
+        outcomes[i] = "Kết hợp này không hợp lệ tại Bến Nhà Rồng.";
       }
     }
 
@@ -314,36 +313,35 @@ function computePanels(panels: PanelState[]): {
     // ══════════════════════════════════════════
     if (scene === "market") {
 
-      // Lao động bị kéo vào chợ
+      // Khảo sát / Luận cương bị kéo vào Hội nghị Vécxây sai chỗ
       if (hasConcreteInPanel || hasAbstractInPanel) {
         if (hasMerchant) stateMap["merchant"] = CHAR_STATES.merchant.confused;
         if (hasWeaver) stateMap["weaver"] = CHAR_STATES.weaver.confused;
-        outcomes[i] = "Hành động lao động xảy ra ở Xưởng Dệt, không phải Cái Chợ!";
-
-        // Thợ dệt đơn độc ở chợ (không có merchant, không có khái niệm)
+       outcomes[i] ="Hãy sắp xếp đúng trình tự lịch sử: Khảo sát thực tiễn trước, Luận cương Lênin sau.";
+        // Nguyễn Tất Thành đơn độc ở Hội nghị nhưng chưa có yêu sách hay đường lối
       } else if (hasWeaver && !hasMerchant && !hasUseValueInPanel && !hasValueInPanel) {
         stateMap["weaver"] = CHAR_STATES.weaver.confused;
-        outcomes[i] = "Thợ dệt: 'Tôi không bán hàng được!'";
+        outcomes[i] = "Nguyễn Tất Thành tại Hội nghị mà chưa mang theo Yêu sách hay đường lối.";
 
         // Thương nhân và Thợ dệt cùng ở chợ nhưng chưa có hàng hóa
       } else if (hasWeaver && hasMerchant && !hasUseValueInPanel && !hasValueInPanel) {
         stateMap["merchant"] = CHAR_STATES.merchant.confused;
         stateMap["weaver"] = CHAR_STATES.weaver.confused;
-        outcomes[i] = "Thương nhân và Thợ dệt: 'Chuyện gì đây?'";
+        outcomes[i] = "Chủ nghĩa đế quốc và Nguyễn Tất Thành chưa gặp được yêu sách hay con đường vô sản.";
 
         // Panel 6: WIN — weaver + merchant + use_value + value
       } else if (hasWeaver && hasMerchant && hasUseValueInPanel && hasValueInPanel) {
         if (hasUseValue && hasValue) {
           stateMap["weaver"] = CHAR_STATES.weaver.happy;
           stateMap["merchant"] = CHAR_STATES.merchant.happy;
-          outcomes[i] = "HÀNG HÓA HOÀN CHỈNH! Có cả Giá trị lẫn Giá trị sử dụng!";
+          outcomes[i] = "Nguyễn Tất Thành tham gia Đại hội Tua 1920 và trở thành người cộng sản Việt Nam đầu tiên.";
           isVictory = true;
         } else {
           stateMap["weaver"] = CHAR_STATES.weaver.confused;
           stateMap["merchant"] = CHAR_STATES.merchant.angry;
           const missing: string[] = [];
-          if (!hasUseValue) missing.push("Giá Trị Sử Dụng (Panel 4)");
-          if (!hasValue) missing.push("Giá Trị (Panel 5)");
+          if (!hasUseValue) missing.push("Yêu sách nhân dân (Panel 4)");
+          if (!hasValue) missing.push("Đường cách mạng vô sản (Panel 5)");
           outcomes[i] = `Chưa đủ điều kiện! Còn thiếu: ${missing.join(", ")}`;
         }
 
@@ -351,25 +349,25 @@ function computePanels(panels: PanelState[]): {
       } else if (hasUseValueInPanel && hasValueInPanel && (!hasWeaver || !hasMerchant)) {
         if (hasMerchant) stateMap["merchant"] = CHAR_STATES.merchant.confused;
         if (hasWeaver) stateMap["weaver"] = CHAR_STATES.weaver.confused;
-        const missingWho = !hasWeaver ? "Thợ Dệt" : "Thương Nhân";
-        outcomes[i] = `Cần thêm ${missingWho} để hoàn tất giao dịch!`;
+        const missingWho = !hasWeaver ? "Nguyễn Tất Thành" : "Hội nghị";
+        outcomes[i] = `Cần thêm ${missingWho} để hoàn thành hành trình lịch sử!`;
 
         // Cả weaver và merchant nhưng thiếu 1 trong 2 khái niệm (use_value hoặc value)
       } else if (hasWeaver && hasMerchant && (!hasUseValueInPanel || !hasValueInPanel)) {
         stateMap["merchant"] = CHAR_STATES.merchant.confused;
         stateMap["weaver"] = CHAR_STATES.weaver.confused;
-        const missingWhich = !hasUseValueInPanel ? "Giá Trị Sử Dụng" : "Giá Trị";
-        outcomes[i] = `Đã có người mua bán nhưng còn thiếu ${missingWhich}!`;
+        const missingWhich = !hasUseValueInPanel ? "Yêu sách nhân dân" : "Đường cách mạng vô sản";
+        outcomes[i] = `Rồi, nhưng còn thiếu ${missingWhich}!`;
 
         // Panel 4: Thương Nhân + Giá Trị Sử Dụng (không có value, không có weaver)
       } else if (hasMerchant && hasUseValueInPanel && !hasValueInPanel && !hasWeaver) {
         if (hasConcreteLabor) {
           stateMap["merchant"] = CHAR_STATES.merchant.idle;
           hasUseValue = true;
-          outcomes[i] = "Giá trị sử dụng: chiếc áo giữ ấm — do lao động cụ thể tạo ra!";
+          outcomes[i] = "Yêu sách nhân dân An Nam được gửi tới Hội nghị Vécxây năm 1919.";
         } else {
           stateMap["merchant"] = CHAR_STATES.merchant.angry;
-          outcomes[i] = "Thương nhân: 'Áo này dùng để làm gì? Chưa ai dệt!' (Cần 'Lao Động Cụ Thể' ở xưởng trước)";
+          outcomes[i] = "Hội nghị chưa nhận được yêu sách đúng nghĩa — cần khảo sát thực tiễn trước.";
         }
 
         // Panel 5: Thương Nhân + Giá Trị (không có use_value, không có weaver)
@@ -377,33 +375,34 @@ function computePanels(panels: PanelState[]): {
         if (hasAbstractLabor) {
           stateMap["merchant"] = CHAR_STATES.merchant.idle;
           hasValue = true;
-          outcomes[i] = "Giá trị: thời gian lao động hao phí kết tinh trong chiếc áo!";
+          outcomes[i] = "Con đường cách mạng vô sản được xác định sau khi đọc Luận cương Lênin.";
         } else {
           stateMap["merchant"] = CHAR_STATES.merchant.angry;
-          outcomes[i] = "Thương nhân: 'Áo này đáng giá bao nhiêu? Chưa rõ sức lao động!' (Cần 'Lao Động Trừu Tượng' ở xưởng trước)";
+          outcomes[i] = "Hội nghị còn thiếu đường lối vô sản rõ ràng — cần Luận cương Lênin trước.";
         }
 
         // Chỉ có merchant, không có gì để bán
       } else if (hasMerchant && !hasUseValueInPanel && !hasValueInPanel) {
         stateMap["merchant"] = CHAR_STATES.merchant.confused;
-        outcomes[i] = "Thương nhân: 'Mua bán cái gì đây?'";
+        outcomes[i] = "Chủ nghĩa đế quốc lạc lối khi chưa đối diện với yêu sách và đường lối cách mạng.";
 
         // Fallback chợ
       } else {
         if (hasMerchant) stateMap["merchant"] = CHAR_STATES.merchant.confused;
         if (hasWeaver) stateMap["weaver"] = CHAR_STATES.weaver.confused;
-        outcomes[i] = "Kết hợp này không hợp lệ tại Cái Chợ.";
+        outcomes[i] = "Hội nghị Vécxây cần cả Yêu sách nhân dân và Đường cách mạng vô sản.";
       }
     }
 
     // Panel chỉ có scene, chưa có nhân vật
-    if (panel.characters.length === 0) {
-      outcomes[i] = scene === "loom"
-        ? "Kéo Thợ Dệt vào Xưởng Dệt!"
-        : "Kéo Thương Nhân và khái niệm vào Cái Chợ!";
-    }
+   if (panel.characters.length === 0) {
+  outcomes[i] =
+    scene === "loom"
+      ? "Kéo Nguyễn Tất Thành vào Bến Nhà Rồng!"
+      : "Kéo Chủ nghĩa đế quốc, Yêu sách nhân dân hoặc Đường cách mạng vô sản vào Hội nghị Vécxây!";
+}
 
-    charStatesByPanel[i] = stateMap;
+charStatesByPanel[i] = stateMap;
   }
 
   return { outcomes, charStatesByPanel, isVictory };
@@ -413,9 +412,8 @@ function computePanels(panels: PanelState[]): {
 // 5. COMPONENT CHÍNH
 // ==========================================
 export default function ChapterPage() {
-  const params = useParams();
   const router = useRouter();
-  const chapterId = 2; // FIX: Hardcode chapter ID to 2 because useParams() returns NaN for static routes
+  const chapterId = 2;
 
   const [panels, setPanels] = useState<PanelState[]>(
     Array(6).fill(null).map((_, i) => ({
@@ -426,8 +424,6 @@ export default function ChapterPage() {
     }))
   );
 
-  const [isWin, setIsWin] = useState(false);
-
   // ==========================================
   // 6. DERIVED STATE
   // ==========================================
@@ -436,21 +432,26 @@ export default function ChapterPage() {
     [panels]
   );
 
-  // FIX: dùng useRef thật sự để tránh gọi lại vô hạn lần
-  const winHandledRef = useRef(false);
-  if (isVictory && !isWin && !winHandledRef.current) {
-    winHandledRef.current = true;
-    setIsWin(true);
-    new Audio("/sounds/win.wav").play().catch(() => { });
+  useEffect(() => {
+    if (!isVictory) return;
+
+    new Audio("/sounds/win.wav")
+      .play()
+      .catch(() => {});
+
     try {
       const saved = localStorage.getItem("completedChapters");
-      const list: number[] = saved ? JSON.parse(saved) : [];
+      const list = saved ? JSON.parse(saved) : [];
+
       if (!list.includes(chapterId)) {
         list.push(chapterId);
-        localStorage.setItem("completedChapters", JSON.stringify(list));
+        localStorage.setItem(
+          "completedChapters",
+          JSON.stringify(list)
+        );
       }
-    } catch (_) { }
-  }
+    } catch {}
+  }, [isVictory, chapterId]);
 
   // ==========================================
   // 7. UNLOCK LOGIC
@@ -470,7 +471,7 @@ export default function ChapterPage() {
   // 8. DRAG & DROP
   // ==========================================
   const handleDragStart = (
-    e: React.DragEvent,
+    e: DragEvent<HTMLDivElement>,
     type: string,
     id: string,
     bgOrIcon: string,
@@ -480,7 +481,7 @@ export default function ChapterPage() {
     e.dataTransfer.setData("bgOrIcon", bgOrIcon);
   };
 
-  const handleDropToPanel = (e: React.DragEvent, panelIndex: number) => {
+  const handleDropToPanel = (e: DragEvent<HTMLDivElement>, panelIndex: number) => {
     e.preventDefault();
     if (panels[panelIndex].isLocked) return;
 
@@ -523,7 +524,11 @@ export default function ChapterPage() {
     });
   };
 
-  const handleDragOver = (e: React.DragEvent) => e.preventDefault();
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => e.preventDefault();
+
+  const handleDropToBin = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  };
 
   const clearPanel = (index: number) => {
     setPanels((prev) => {
@@ -549,9 +554,10 @@ export default function ChapterPage() {
       {/* TIÊU ĐỀ */}
       <div className="flex items-center justify-center pt-8 pb-2">
         <h2 className="text-3xl font-serif text-[#4a4036] font-bold tracking-wide">
-          Chương 2: Bí mật bên trong một chiếc áo len là gì?
+          Chương 2: Vượt trùng dương và Tìm thấy ánh sáng (1911-1920)
         </h2>
       </div>
+     
 
       {/* PANELS GRID */}
       <div className="flex-1 px-16 pt-2 pb-4">
@@ -559,7 +565,7 @@ export default function ChapterPage() {
           {panels.map((panel, i) => {
             const outcome = outcomes[i];
             const stateMap = charStatesByPanel[i] ?? {};
-            const isSuccess = outcome === "HÀNG HÓA HOÀN CHỈNH! Có cả Giá trị lẫn Giá trị sử dụng!";
+            const isSuccess = outcome === "Nguyễn Tất Thành tham gia Đại hội Tua 1920 và trở thành người cộng sản Việt Nam đầu tiên.";
             const compositeImg = getCompositeImg(panel, stateMap);
 
             return (
@@ -567,22 +573,14 @@ export default function ChapterPage() {
                 key={i}
                 onDrop={(e) => handleDropToPanel(e, i)}
                 onDragOver={handleDragOver}
-                className={`border-4 rounded bg-[#e8dbb9]/30 shadow-inner relative flex flex-col items-center justify-end overflow-hidden group transition-all
-                  ${panel.isLocked
-                    ? "border-gray-400 opacity-50 bg-gray-200/20"
-                    : "border-[#a69279]"}
-                  ${isSuccess
-                    ? "border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.5)]"
-                    : ""}`}
+                className={`border-4 rounded bg-[#e8dbb9]/30 shadow-inner relative flex flex-col items-center justify-end overflow-hidden group transition-all ${panel.isLocked ? "border-gray-400 opacity-50 bg-gray-200/20" : "border-[#a69279]"} ${isSuccess ? "border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.5)]" : ""}`}
               >
-                {/* LOCK OVERLAY */}
                 {panel.isLocked && (
                   <div className="absolute inset-0 z-50 flex items-center justify-center font-bold text-gray-500 text-2xl">
                     🔒
                   </div>
                 )}
 
-                {/* NÚT XÓA */}
                 {panel.sceneId && !panel.isLocked && (
                   <button
                     onClick={() => clearPanel(i)}
@@ -592,8 +590,7 @@ export default function ChapterPage() {
                   </button>
                 )}
 
-                {/* BACKGROUND — hiện khi chưa có composite (scene trống chưa có nhân vật) */}
-                {panel.sceneBg && !compositeImg && (
+                {panel.sceneBg && (
                   <img
                     src={panel.sceneBg}
                     alt="bg"
@@ -601,7 +598,6 @@ export default function ChapterPage() {
                   />
                 )}
 
-                {/* COMPOSITE — chuyển ảnh mượt khi trạng thái thay đổi */}
                 {compositeImg && (
                   <motion.img
                     key={compositeImg}
@@ -610,11 +606,25 @@ export default function ChapterPage() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.4 }}
-                    className="absolute inset-0 w-full h-full object-cover z-0"
+                    className="absolute inset-0 w-full h-full object-cover object-center z-0"
                   />
                 )}
 
-                {/* SỐ THỨ TỰ PANEL */}
+                <div className="absolute inset-0 z-10 flex items-end justify-center pb-8 px-4 pointer-events-none">
+                  <div className="flex h-[75%] gap-2 w-full justify-center">
+                    {panel.characters.map((char) => (
+                     <motion.div
+                      key={char.id}
+                      initial={{ y: -20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      className="h-full relative pointer-events-auto overflow-hidden"
+>
+                       
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+
                 {!panel.sceneId && !panel.isLocked && (
                   <div className="absolute inset-0 flex items-center justify-center z-10">
                     <span className="text-[#a69279] text-5xl font-serif opacity-30 select-none">
@@ -623,11 +633,9 @@ export default function ChapterPage() {
                   </div>
                 )}
 
-                {/* OUTCOME TEXT */}
                 {outcome && (
-                  <div className="absolute bottom-0 w-full bg-black/40 backdrop-blur-sm flex items-center justify-center z-20 py-1 px-2 min-h-[32px]">
-                    <span className={`text-sm font-medium tracking-wide drop-shadow-[0_2px_2px_rgba(0,0,0,1)] text-center leading-tight
-                      ${isSuccess ? "text-green-300" : "text-white"}`}>
+                  <div className="absolute bottom-0 w-full min-h-[44px] backdrop-blur-sm flex items-center justify-center px-2 py-1 z-20 bg-black/75">
+                    <span className={`text-white text-[11px] leading-tight text-center font-medium drop-shadow-md ${isSuccess ? "text-green-300" : "text-white"}`}>
                       {outcome}
                     </span>
                   </div>
@@ -640,7 +648,8 @@ export default function ChapterPage() {
 
       {/* KHAY ĐỒ NGHỀ */}
       <div
-        className="h-[140px] mt-2 mx-4 sm:mx-12 border-t-[3px] border-double border-[#c2a878]/60 flex items-start pt-6 justify-start sm:justify-center gap-4 sm:gap-6 bg-white/10 rounded-t-2xl overflow-x-auto px-4"
+        className="h-[160px] mt-4 mx-12 px-4 border-t-[3px] border-double border-[#c2a878]/60 flex items-center justify-start sm:justify-center gap-3 md:gap-5 bg-white/10 rounded-t-2xl overflow-x-auto"
+        onDrop={handleDropToBin}
         onDragOver={handleDragOver}
       >
         {/* SCENES */}
@@ -649,18 +658,18 @@ export default function ChapterPage() {
             key={asset.id}
             draggable
             onDragStart={(e) => handleDragStart(e, "scene", asset.id, asset.bg)}
-            className="flex flex-col items-center flex-shrink-0 cursor-grab hover:scale-110 active:cursor-grabbing"
+            className="flex flex-col items-center cursor-grab hover:scale-110 active:cursor-grabbing flex-shrink-0"
           >
-            <div className="w-16 h-16 rounded-lg border-2 border-dashed border-[#a69279] bg-[#e8dbb9] mb-1 flex items-center justify-center shadow-md overflow-hidden">
+            <div className="w-14 h-14 rounded-lg border-2 border-dashed border-[#a69279] bg-[#e8dbb9] mb-1 flex items-center justify-center shadow-md overflow-hidden">
               <img src={asset.icon} alt={asset.label} className="w-full h-full object-cover" />
             </div>
-            <span className="font-serif text-[#5c4a3d] font-bold text-sm text-center leading-tight max-w-[72px]">
+            <span className="font-serif text-[#5c4a3d] font-bold text-[10px] text-center max-w-[60px] leading-tight">
               {asset.label}
             </span>
           </div>
         ))}
 
-        <div className="w-[2px] h-16 bg-[#c2a878]/40 mx-2 mt-2" />
+        <div className="w-[2px] h-12 bg-[#c2a878]/40 mx-1 md:mx-2 flex-shrink-0" />
 
         {/* CHARACTERS */}
         {CHAPTER_2_ASSETS.characters.map((asset) => (
@@ -668,12 +677,12 @@ export default function ChapterPage() {
             key={asset.id}
             draggable
             onDragStart={(e) => handleDragStart(e, "character", asset.id, asset.icon)}
-            className="flex flex-col items-center flex-shrink-0 cursor-grab hover:scale-110 active:cursor-grabbing"
+            className="flex flex-col items-center cursor-grab hover:scale-110 active:cursor-grabbing flex-shrink-0"
           >
-            <div className="w-14 h-14 rounded-full border-2 border-[#a69279] bg-[#e8dbb9] mb-1 flex items-center justify-center shadow-md overflow-hidden">
+            <div className="w-12 h-12 rounded-full border-2 border-[#a69279] bg-[#e8dbb9] mb-1 flex items-center justify-center shadow-md overflow-hidden">
               <img src={asset.icon} alt={asset.label} className="w-full h-full object-contain" />
             </div>
-            <span className="font-serif text-[#5c4a3d] font-bold text-xs text-center leading-tight max-w-[64px]">
+            <span className="font-serif text-[#5c4a3d] font-bold text-[10px] text-center max-w-[60px] leading-tight">
               {asset.label}
             </span>
           </div>
@@ -682,7 +691,7 @@ export default function ChapterPage() {
 
       {/* MODAL THẮNG */}
       <AnimatePresence>
-        {isWin && (
+        {isVictory && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -693,11 +702,9 @@ export default function ChapterPage() {
               Hoàn thành xuất sắc!
             </h2>
             <p className="text-white/80 text-lg font-serif max-w-md leading-relaxed">
-              Hàng hóa luôn có{" "}
-              <span className="text-amber-300 font-bold">2 thuộc tính</span>:{" "}
-              <span className="text-amber-300 font-bold">Giá trị sử dụng</span> và{" "}
-              <span className="text-amber-300 font-bold">Giá trị</span> — do tính chất
-              hai mặt của lao động sản xuất hàng hóa quyết định.
+              Nguyễn Tất Thành đã đi từ Bến Nhà Rồng đến Hội nghị Vécxây và Đại hội Tua,
+              xác định kẻ thù chung, tiếp cận ánh sáng của chủ nghĩa Mác - Lênin,
+              và trở thành người cộng sản Việt Nam đầu tiên.
             </p>
             <button
               onClick={() => router.push("/")}

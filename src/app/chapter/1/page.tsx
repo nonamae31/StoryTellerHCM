@@ -9,66 +9,111 @@ import { CheckCircle2 } from "lucide-react";
 // ==========================================
 // 1. DATA ASSETS & TRẠNG THÁI ẢNH
 // ==========================================
+const USE_OFFLINE_IMAGES = process.env.NEXT_PUBLIC_USE_OFFLINE_IMAGES === "true";
+
+const CLOUDINARY_LINKS: Record<string, string> = {
+  "char_phanboichau_angry.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_phanboichau_angry.png",
+  "char_phanboichau_confused.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_phanboichau_confused.png",
+  "char_phanboichau_happy.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_phanboichau_happy.png",
+  "char_phanboichau_idle.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_phanboichau_idle.png",
+  "char_sinhcung_angry.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_sinhcung_angry.png",
+  "char_sinhcung_confused.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_sinhcung_confused.png",
+  "char_sinhcung_happy.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_sinhcung_happy.png",
+  "char_sinhcung_idle.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_sinhcung_idle.png",
+  "char_sinhsac_angry.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_sinhsac_angry.png",
+  "char_sinhsac_confused.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_sinhsac_confused.png",
+  "char_sinhsac_happy.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_sinhsac_happy.png",
+  "char_sinhsac_idle.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_sinhsac_idle.png",
+  "char_tatthanh_angry.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_tatthanh_angry.png",
+  "char_tatthanh_confused.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_tatthanh_confused.png",
+  "char_tatthanh_happy.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_tatthanh_happy.png",
+  "char_tatthanh_idle.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_tatthanh_idle.png",
+  "char_trieudinh_angry.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_trieudinh_angry.png",
+  "char_trieudinh_confused.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_trieudinh_confused.png",
+  "char_trieudinh_happy.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_trieudinh_happy.png",
+  "char_trieudinh_idle.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_trieudinh_idle.png",
+  "char_vanba_angry.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_vanba_angry.png",
+  "char_vanba_confused.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_vanba_confused.png",
+  "char_vanba_happy.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_vanba_happy.png",
+  "char_vanba_idle.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/char_vanba_idle.png",
+  "icon_act_chungkien.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/icon_act_chungkien.png",
+  "icon_act_duangoai.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/icon_act_duangoai.png",
+  "icon_act_kethua.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/icon_act_kethua.png",
+  "icon_act_khuoctu.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/icon_act_khuoctu.png",
+  "icon_act_lamquan.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/icon_act_lamquan.png",
+  "icon_act_phubep.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/icon_act_phubep.png",
+  "icon_loc_hue.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/icon_loc_hue.png",
+  "icon_loc_nghean.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/icon_loc_nghean.png",
+  "icon_loc_nharong.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/icon_loc_nharong.png",
+  "kinhthanhhue.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/kinhthanhhue.png",
+  "nghean.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/nghean.png",
+  "saigon.png": "https://res.cloudinary.com/ditwkoldt/image/upload/chapter1_assets/saigon.png"
+};
+
+const getImg = (filename: string) => {
+  return USE_OFFLINE_IMAGES ? `/chapter1/${filename}` : (CLOUDINARY_LINKS[filename] || `/chapter1/${filename}`);
+};
+
 const CHAPTER_1_ASSETS = {
   scenes: [
-    { id: "loc_nghean", label: "Nghệ An", icon: "/chapter1/icon_loc_nghean.png", bg: "/chapter1/nghean.png" },
-    { id: "loc_hue", label: "Kinh thành Huế", icon: "/chapter1/icon_loc_hue.png", bg: "/chapter1/kinhthanhhue.png" },
-    { id: "loc_nharong", label: "Bến cảng Nhà Rồng", icon: "/chapter1/icon_loc_nharong.png", bg: "/chapter1/saigon.png" },
+    { id: "loc_nghean", label: "Nghệ An", icon: getImg("icon_loc_nghean.png"), bg: getImg("nghean.png") },
+    { id: "loc_hue", label: "Kinh thành Huế", icon: getImg("icon_loc_hue.png"), bg: getImg("kinhthanhhue.png") },
+    { id: "loc_nharong", label: "Bến cảng Nhà Rồng", icon: getImg("icon_loc_nharong.png"), bg: getImg("saigon.png") },
   ],
   characters: [
-    { id: "char_sinhcung", label: "Nguyễn Sinh Cung", icon: "/chapter1/char_sinhcung_idle.png" },
-    { id: "char_sinhsac", label: "Cụ Nguyễn Sinh Sắc", icon: "/chapter1/char_sinhsac_idle.png" },
-    { id: "char_phanboichau", label: "Cụ Phan Bội Châu", icon: "/chapter1/char_phanboichau_idle.png" },
-    { id: "char_trieudinh", label: "Triều đình", icon: "/chapter1/char_trieudinh_idle.png", isTrap: true },
-    { id: "char_tatthanh", label: "Nguyễn Tất Thành", icon: "/chapter1/char_tatthanh_idle.png" },
-    { id: "char_vanba", label: "Văn Ba", icon: "/chapter1/char_vanba_idle.png" },
+    { id: "char_sinhcung", label: "Nguyễn Sinh Cung", icon: getImg("char_sinhcung_idle.png") },
+    { id: "char_sinhsac", label: "Cụ Nguyễn Sinh Sắc", icon: getImg("char_sinhsac_idle.png") },
+    { id: "char_phanboichau", label: "Cụ Phan Bội Châu", icon: getImg("char_phanboichau_idle.png") },
+    { id: "char_trieudinh", label: "Triều đình", icon: getImg("char_trieudinh_idle.png"), isTrap: true },
+    { id: "char_tatthanh", label: "Nguyễn Tất Thành", icon: getImg("char_tatthanh_idle.png") },
+    { id: "char_vanba", label: "Văn Ba", icon: getImg("char_vanba_idle.png") },
   ],
   actions: [
-    { id: "act_kethua", label: "Kế thừa yêu nước", icon: "/chapter1/icon_act_kethua.png" },
-    { id: "act_chungkien", label: "Chứng kiến xa hoa", icon: "/chapter1/icon_act_chungkien.png" },
-    { id: "act_lamquan", label: "Làm quan", icon: "/chapter1/icon_act_lamquan.png", isTrap: true },
-    { id: "act_duangoai", label: "Dựa ngoại bang", icon: "/chapter1/icon_act_duangoai.png", isTrap: true },
-    { id: "act_khuoctu", label: "Khước từ lối mòn", icon: "/chapter1/icon_act_khuoctu.png" },
-    { id: "act_phubep", label: "Làm phụ bếp", icon: "/chapter1/icon_act_phubep.png" },
+    { id: "act_kethua", label: "Kế thừa yêu nước", icon: getImg("icon_act_kethua.png") },
+    { id: "act_chungkien", label: "Chứng kiến xa hoa", icon: getImg("icon_act_chungkien.png") },
+    { id: "act_lamquan", label: "Làm quan", icon: getImg("icon_act_lamquan.png"), isTrap: true },
+    { id: "act_duangoai", label: "Dựa ngoại bang", icon: getImg("icon_act_duangoai.png"), isTrap: true },
+    { id: "act_khuoctu", label: "Khước từ lối mòn", icon: getImg("icon_act_khuoctu.png") },
+    { id: "act_phubep", label: "Làm phụ bếp", icon: getImg("icon_act_phubep.png") },
   ]
 };
 
 const CHAR_STATES: Record<string, Record<string, string>> = {
   char_sinhcung: {
-    idle: "/chapter1/char_sinhcung_idle.png",
-    happy: "/chapter1/char_sinhcung_happy.png",
-    angry: "/chapter1/char_sinhcung_angry.png",
-    confused: "/chapter1/char_sinhcung_confused.png",
+    idle: getImg("char_sinhcung_idle.png"),
+    happy: getImg("char_sinhcung_happy.png"),
+    angry: getImg("char_sinhcung_angry.png"),
+    confused: getImg("char_sinhcung_confused.png"),
   },
   char_tatthanh: {
-    idle: "/chapter1/char_tatthanh_idle.png",
-    happy: "/chapter1/char_tatthanh_happy.png",
-    angry: "/chapter1/char_tatthanh_angry.png",
-    confused: "/chapter1/char_tatthanh_confused.png",
+    idle: getImg("char_tatthanh_idle.png"),
+    happy: getImg("char_tatthanh_happy.png"),
+    angry: getImg("char_tatthanh_angry.png"),
+    confused: getImg("char_tatthanh_confused.png"),
   },
   char_vanba: {
-    idle: "/chapter1/char_vanba_idle.png",
-    happy: "/chapter1/char_vanba_happy.png",
-    angry: "/chapter1/char_vanba_angry.png",
-    confused: "/chapter1/char_vanba_confused.png",
+    idle: getImg("char_vanba_idle.png"),
+    happy: getImg("char_vanba_happy.png"),
+    angry: getImg("char_vanba_angry.png"),
+    confused: getImg("char_vanba_confused.png"),
   },
   char_sinhsac: {
-    idle: "/chapter1/char_sinhsac_idle.png",
-    happy: "/chapter1/char_sinhsac_happy.png",
-    angry: "/chapter1/char_sinhsac_angry.png",
-    confused: "/chapter1/char_sinhsac_confused.png",
+    idle: getImg("char_sinhsac_idle.png"),
+    happy: getImg("char_sinhsac_happy.png"),
+    angry: getImg("char_sinhsac_angry.png"),
+    confused: getImg("char_sinhsac_confused.png"),
   },
   char_phanboichau: {
-    idle: "/chapter1/char_phanboichau_idle.png",
-    happy: "/chapter1/char_phanboichau_happy.png",
-    angry: "/chapter1/char_phanboichau_angry.png",
-    confused: "/chapter1/char_phanboichau_confused.png",
+    idle: getImg("char_phanboichau_idle.png"),
+    happy: getImg("char_phanboichau_happy.png"),
+    angry: getImg("char_phanboichau_angry.png"),
+    confused: getImg("char_phanboichau_confused.png"),
   },
   char_trieudinh: {
-    idle: "/chapter1/char_trieudinh_idle.png",
-    happy: "/chapter1/char_trieudinh_happy.png",
-    angry: "/chapter1/char_trieudinh_angry.png",
-    confused: "/chapter1/char_trieudinh_confused.png",
+    idle: getImg("char_trieudinh_idle.png"),
+    happy: getImg("char_trieudinh_happy.png"),
+    angry: getImg("char_trieudinh_angry.png"),
+    confused: getImg("char_trieudinh_confused.png"),
   },
 };
 
