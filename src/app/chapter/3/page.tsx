@@ -9,62 +9,89 @@ import { CheckCircle2 } from "lucide-react";
 // ==========================================
 // 1. DATA ASSETS & TRẠNG THÁI ẢNH
 // ==========================================
+const USE_OFFLINE_IMAGES = process.env.NEXT_PUBLIC_USE_OFFLINE_IMAGES === "true";
+
+const CLOUDINARY_LINKS_CH3: Record<string, string> = {
+  "bg_guangzhou_classroom.png": "https://res.cloudinary.com/ditwkoldt/image/upload/v1780842512/chapter3_assets/bg_guangzhou_classroom.jpg",
+  "bg_hongkong_conference.png": "https://res.cloudinary.com/ditwkoldt/image/upload/v1780842516/chapter3_assets/bg_hongkong_conference.jpg",
+  "bg_leparia_office.png": "https://res.cloudinary.com/ditwkoldt/image/upload/v1780842518/chapter3_assets/bg_leparia_office.jpg",
+  "bg_union_office.png": "https://res.cloudinary.com/ditwkoldt/image/upload/v1780842519/chapter3_assets/bg_union_office.jpg",
+  "bg_vietnam_village.png": "https://res.cloudinary.com/ditwkoldt/image/upload/v1780842521/chapter3_assets/bg_vietnam_village.jpg",
+  "bg_writing_room.png": "https://res.cloudinary.com/ditwkoldt/image/upload/v1780842522/chapter3_assets/bg_writing_room.jpg",
+  "char_aiquoc_idle.png": "https://res.cloudinary.com/ditwkoldt/image/upload/v1780842523/chapter3_assets/char_aiquoc_idle.png",
+  "char_aiquoc_inspired.png": "https://res.cloudinary.com/ditwkoldt/image/upload/v1780842524/chapter3_assets/char_aiquoc_inspired.png",
+  "char_aiquoc_thinking.png": "https://res.cloudinary.com/ditwkoldt/image/upload/v1780842526/chapter3_assets/char_aiquoc_thinking.png",
+  "char_aiquoc_victorious.png": "https://res.cloudinary.com/ditwkoldt/image/upload/v1780842527/chapter3_assets/char_aiquoc_victorious.png",
+  "char_colonial_angry.png": "https://res.cloudinary.com/ditwkoldt/image/upload/v1780842529/chapter3_assets/char_colonial_angry.png",
+  "char_colonial_idle.png": "https://res.cloudinary.com/ditwkoldt/image/upload/v1780842531/chapter3_assets/char_colonial_idle.png",
+  "char_revolutionary_youth.png": "https://res.cloudinary.com/ditwkoldt/image/upload/v1780842533/chapter3_assets/char_revolutionary_youth.png",
+  "char_revolutionary_youth_inspired.png": "https://res.cloudinary.com/ditwkoldt/image/upload/v1780842534/chapter3_assets/char_revolutionary_youth_inspired.png",
+  "char_vietnamese_farmer.png": "https://res.cloudinary.com/ditwkoldt/image/upload/v1780842535/chapter3_assets/char_vietnamese_farmer.png",
+  "char_vietnamese_worker.png": "https://res.cloudinary.com/ditwkoldt/image/upload/v1780842536/chapter3_assets/char_vietnamese_worker.png",
+  "char_worker_african.png": "https://res.cloudinary.com/ditwkoldt/image/upload/v1780842538/chapter3_assets/char_worker_african.png",
+  "char_worker_french.png": "https://res.cloudinary.com/ditwkoldt/image/upload/v1780842539/chapter3_assets/char_worker_french.png"
+};
+
+const getImg = (filename: string) => {
+  return USE_OFFLINE_IMAGES ? `/chapter3/${filename}` : (CLOUDINARY_LINKS_CH3[filename] || `/chapter3/${filename}`);
+};
+
 const CHAPTER_3_ASSETS = {
   scenes: [
     {
       id: "loc_paris_hll",
       label: "Hội Liên Hiệp\nThuộc Địa",
-      icon: "/chapter3/bg_union_office.png",
-      bg: "/chapter3/bg_union_office.png",
+      icon: getImg("bg_union_office.png"),
+      bg: getImg("bg_union_office.png"),
     },
     {
       id: "loc_paris_leparia",
       label: "Tòa soạn\nLe Paria",
-      icon: "/chapter3/bg_leparia_office.png",
-      bg: "/chapter3/bg_leparia_office.png",
+      icon: getImg("bg_leparia_office.png"),
+      bg: getImg("bg_leparia_office.png"),
     },
     {
       id: "loc_paris_banan",
       label: "Phòng viết\ncách mạng",
-      icon: "/chapter3/bg_writing_room.png",
-      bg: "/chapter3/bg_writing_room.png",
+      icon: getImg("bg_writing_room.png"),
+      bg: getImg("bg_writing_room.png"),
     },
     {
       id: "loc_guangzhou",
       label: "Lớp học\nQuảng Châu",
-      icon: "/chapter3/bg_guangzhou_classroom.png",
-      bg: "/chapter3/bg_guangzhou_classroom.png",
+      icon: getImg("bg_guangzhou_classroom.png"),
+      bg: getImg("bg_guangzhou_classroom.png"),
     },
     {
       id: "loc_vietnam_village",
       label: "Làng quê\nViệt Nam",
-      icon: "/chapter3/bg_vietnam_village.png",
-      bg: "/chapter3/bg_vietnam_village.png",
+      icon: getImg("bg_vietnam_village.png"),
+      bg: getImg("bg_vietnam_village.png"),
     },
     {
       id: "loc_hongkong",
       label: "Hội nghị\nHồng Kông",
-      icon: "/chapter3/bg_hongkong_conference.png",
-      bg: "/chapter3/bg_hongkong_conference.png",
+      icon: getImg("bg_hongkong_conference.png"),
+      bg: getImg("bg_hongkong_conference.png"),
     },
   ],
   characters: [
-    { id: "char_aiquoc",         label: "Nguyễn Ái Quốc",       icon: "/chapter3/char_aiquoc_idle.png"           },
-    { id: "char_worker_french",  label: "Công nhân Pháp",        icon: "/chapter3/char_worker_french.png"         },
-    { id: "char_worker_african", label: "Công nhân\nChâu Phi",   icon: "/chapter3/char_worker_african.png"        },
-    { id: "char_viet_worker",    label: "Công nhân\nViệt Nam",   icon: "/chapter3/char_vietnamese_worker.png"     },
-    { id: "char_viet_farmer",    label: "Nông dân\nViệt Nam",    icon: "/chapter3/char_vietnamese_farmer.png"     },
-    { id: "char_rev_youth",      label: "Thanh niên\ncách mạng", icon: "/chapter3/char_revolutionary_youth.png"   },
-    { id: "char_colonial",       label: "Thực dân Pháp",         icon: "/chapter3/char_colonial_idle.png",        isTrap: true },
+    { id: "char_aiquoc",         label: "Nguyễn Ái Quốc",       icon: getImg("char_aiquoc_idle.png")           },
+    { id: "char_worker_french",  label: "Công nhân Pháp",        icon: getImg("char_worker_french.png")         },
+    { id: "char_worker_african", label: "Công nhân\nChâu Phi",   icon: getImg("char_worker_african.png")        },
+    { id: "char_viet_worker",    label: "Công nhân\nViệt Nam",   icon: getImg("char_vietnamese_worker.png")     },
+    { id: "char_viet_farmer",    label: "Nông dân\nViệt Nam",    icon: getImg("char_vietnamese_farmer.png")     },
+    { id: "char_rev_youth",      label: "Thanh niên\ncách mạng", icon: getImg("char_revolutionary_youth.png")   },
+    { id: "char_colonial",       label: "Thực dân Pháp",         icon: getImg("char_colonial_idle.png"),        isTrap: true },
   ],
   actions: [
-    { id: "act_doan_ket",    label: "Đoàn kết\nquốc tế",    icon: "/chapter3/bg_union_office.png"      },
-    { id: "act_tuyen_truyen",label: "Tuyên truyền\nCM",      icon: "/chapter3/bg_writing_room.png"        },
-    { id: "act_huan_luyen",  label: "Huấn luyện",            icon: "/chapter3/bg_guangzhou_classroom.png" },
-    { id: "act_lien_minh",   label: "Liên minh\nCông-Nông",  icon: "/chapter3/bg_vietnam_village.png"     },
-    { id: "act_thanh_lap",   label: "Thành lập\nĐảng",       icon: "/chapter3/bg_hongkong_conference.png" },
-    { id: "act_bao_luc",     label: "Dùng bạo lực",          icon: "/chapter3/char_colonial_angry.png",   isTrap: true },
-    { id: "act_ky_nguyen",   label: "Kêu gọi\nđế quốc",     icon: "/chapter3/char_colonial_idle.png",    isTrap: true },
+    { id: "act_doan_ket",    label: "Đoàn kết\nquốc tế",    icon: getImg("bg_union_office.png")      },
+    { id: "act_tuyen_truyen",label: "Tuyên truyền\nCM",      icon: getImg("bg_writing_room.png")        },
+    { id: "act_huan_luyen",  label: "Huấn luyện",            icon: getImg("bg_guangzhou_classroom.png") },
+    { id: "act_lien_minh",   label: "Liên minh\nCông-Nông",  icon: getImg("bg_vietnam_village.png")     },
+    { id: "act_thanh_lap",   label: "Thành lập\nĐảng",       icon: getImg("bg_hongkong_conference.png") },
+    { id: "act_bao_luc",     label: "Dùng bạo lực",          icon: getImg("char_colonial_angry.png"),   isTrap: true },
+    { id: "act_ky_nguyen",   label: "Kêu gọi\nđế quốc",     icon: getImg("char_colonial_idle.png"),    isTrap: true },
   ],
 };
 
@@ -73,46 +100,46 @@ const CHAPTER_3_ASSETS = {
 // ==========================================
 const CHAR_STATES: Record<string, Record<string, string>> = {
   char_aiquoc: {
-    idle:     "/chapter3/char_aiquoc_idle.png",
-    happy:    "/chapter3/char_aiquoc_victorious.png",
-    angry:    "/chapter3/char_aiquoc_inspired.png",
-    confused: "/chapter3/char_aiquoc_thinking.png",
+    idle:     getImg("char_aiquoc_idle.png"),
+    happy:    getImg("char_aiquoc_victorious.png"),
+    angry:    getImg("char_aiquoc_inspired.png"),
+    confused: getImg("char_aiquoc_thinking.png"),
   },
   char_worker_french: {
-    idle:     "/chapter3/char_worker_french.png",
-    happy:    "/chapter3/char_worker_french.png",
-    angry:    "/chapter3/char_worker_french.png",
-    confused: "/chapter3/char_worker_french.png",
+    idle:     getImg("char_worker_french.png"),
+    happy:    getImg("char_worker_french.png"),
+    angry:    getImg("char_worker_french.png"),
+    confused: getImg("char_worker_french.png"),
   },
   char_worker_african: {
-    idle:     "/chapter3/char_worker_african.png",
-    happy:    "/chapter3/char_worker_african.png",
-    angry:    "/chapter3/char_worker_african.png",
-    confused: "/chapter3/char_worker_african.png",
+    idle:     getImg("char_worker_african.png"),
+    happy:    getImg("char_worker_african.png"),
+    angry:    getImg("char_worker_african.png"),
+    confused: getImg("char_worker_african.png"),
   },
   char_viet_worker: {
-    idle:     "/chapter3/char_vietnamese_worker.png",
-    happy:    "/chapter3/char_vietnamese_worker.png",
-    angry:    "/chapter3/char_vietnamese_worker.png",
-    confused: "/chapter3/char_vietnamese_worker.png",
+    idle:     getImg("char_vietnamese_worker.png"),
+    happy:    getImg("char_vietnamese_worker.png"),
+    angry:    getImg("char_vietnamese_worker.png"),
+    confused: getImg("char_vietnamese_worker.png"),
   },
   char_viet_farmer: {
-    idle:     "/chapter3/char_vietnamese_farmer.png",
-    happy:    "/chapter3/char_vietnamese_farmer.png",
-    angry:    "/chapter3/char_vietnamese_farmer.png",
-    confused: "/chapter3/char_vietnamese_farmer.png",
+    idle:     getImg("char_vietnamese_farmer.png"),
+    happy:    getImg("char_vietnamese_farmer.png"),
+    angry:    getImg("char_vietnamese_farmer.png"),
+    confused: getImg("char_vietnamese_farmer.png"),
   },
   char_rev_youth: {
-    idle:     "/chapter3/char_revolutionary_youth.png",
-    happy:    "/chapter3/char_revolutionary_youth_inspired.png",
-    angry:    "/chapter3/char_revolutionary_youth.png",
-    confused: "/chapter3/char_revolutionary_youth.png",
+    idle:     getImg("char_revolutionary_youth.png"),
+    happy:    getImg("char_revolutionary_youth_inspired.png"),
+    angry:    getImg("char_revolutionary_youth.png"),
+    confused: getImg("char_revolutionary_youth.png"),
   },
   char_colonial: {
-    idle:     "/chapter3/char_colonial_idle.png",
-    happy:    "/chapter3/char_colonial_idle.png",
-    angry:    "/chapter3/char_colonial_angry.png",
-    confused: "/chapter3/char_colonial_angry.png",
+    idle:     getImg("char_colonial_idle.png"),
+    happy:    getImg("char_colonial_idle.png"),
+    angry:    getImg("char_colonial_angry.png"),
+    confused: getImg("char_colonial_angry.png"),
   },
 };
 
