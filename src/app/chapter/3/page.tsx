@@ -14,8 +14,8 @@ const CHAPTER_3_ASSETS = {
     {
       id: "loc_paris_hll",
       label: "Hội Liên Hiệp\nThuộc Địa",
-      icon: "/chapter3/bg_leparia_office.png",
-      bg: "/chapter3/bg_leparia_office.png",
+      icon: "/chapter3/bg_union_office.png",
+      bg: "/chapter3/bg_union_office.png",
     },
     {
       id: "loc_paris_leparia",
@@ -58,7 +58,7 @@ const CHAPTER_3_ASSETS = {
     { id: "char_colonial",       label: "Thực dân Pháp",         icon: "/chapter3/char_colonial_idle.png",        isTrap: true },
   ],
   actions: [
-    { id: "act_doan_ket",    label: "Đoàn kết\nquốc tế",    icon: "/chapter3/bg_leparia_office.png"      },
+    { id: "act_doan_ket",    label: "Đoàn kết\nquốc tế",    icon: "/chapter3/bg_union_office.png"      },
     { id: "act_tuyen_truyen",label: "Tuyên truyền\nCM",      icon: "/chapter3/bg_writing_room.png"        },
     { id: "act_huan_luyen",  label: "Huấn luyện",            icon: "/chapter3/bg_guangzhou_classroom.png" },
     { id: "act_lien_minh",   label: "Liên minh\nCông-Nông",  icon: "/chapter3/bg_vietnam_village.png"     },
@@ -220,13 +220,13 @@ export default function Chapter3Page() {
   const router = useRouter();
 
   const [panels, setPanels] = useState<PanelState[]>(
-    Array(6).fill(null).map((_, i) => ({
+    Array(6).fill(null).map(() => ({
       sceneId: null,
       sceneBg: null,
       characters: [],
       actions: [],
       outcome: null,
-      isLocked: i !== 0,
+      isLocked: false,
     }))
   );
 
@@ -245,22 +245,30 @@ export default function Chapter3Page() {
       const actions = panel.actions || [];
 
       if (!scene) {
-        for (let j = i + 1; j < 6; j++) newPanels[j] = { ...newPanels[j], isLocked: true };
+        panel.outcome = null;
+        panel.isSuccess = false;
+        panel.isError = false;
+        panel.isConfuse = false;
         newPanels[i] = panel;
-        break;
+        continue;
       }
-
-      if (i + 1 < 6) newPanels[i + 1] = { ...newPanels[i + 1], isLocked: false };
 
       let status: ScenarioStatus | null = null;
       let outcome = "";
 
       for (const rule of RULES) {
         if (rule.sceneId !== scene) continue;
-        const hasRequiredChars = rule.requiredChars.every((c) => chars.includes(c));
+
+        // Enforce exact character match for SUCCESS, subset match for trap/confused rules
+        const isSuccessRule = rule.status === "SUCCESS";
+        const hasRequiredChars = isSuccessRule
+          ? (rule.requiredChars.length === chars.length && rule.requiredChars.every((c) => chars.includes(c)))
+          : rule.requiredChars.every((c) => chars.includes(c));
+
         const hasRequiredAction = rule.requiredAction
           ? actions.includes(rule.requiredAction)
           : true;
+
         if (hasRequiredChars && hasRequiredAction && chars.length > 0) {
           status = rule.status;
           outcome = rule.outcome;
@@ -390,18 +398,8 @@ export default function Chapter3Page() {
       characters: [],
       actions: [],
       outcome: null,
-      isLocked: index !== 0,
+      isLocked: false,
     };
-    for (let i = index + 1; i < 6; i++) {
-      newPanels[i] = {
-        sceneId: null,
-        sceneBg: null,
-        characters: [],
-        actions: [],
-        outcome: null,
-        isLocked: true,
-      };
-    }
     setPanels(newPanels);
   };
 
