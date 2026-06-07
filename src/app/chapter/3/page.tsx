@@ -185,7 +185,7 @@ const getCharStateImg = (charId: string, emotion: string) => {
 
 
 // ==========================================
-// TYPES
+// TYPES & NARRATIVE DEFINITIONS
 // ==========================================
 interface PanelCharacter {
   id: string;
@@ -204,14 +204,170 @@ interface PanelState {
   isConfuse?: boolean;
 }
 
-const VICTORY_TIMELINE = [
-  "loc_paris_hll",
-  "loc_paris_leparia",
-  "loc_paris_banan",
-  "loc_guangzhou",
-  "loc_vietnam_village",
-  "loc_hongkong",
-];
+type EventType =
+  | "COLONIAL_UNION"
+  | "LE_PARIA"
+  | "COLONIAL_REGIME_ON_TRIAL"
+  | "DUONG_KACH_MENH"
+  | "WORKER_PEASANT_ALLIANCE"
+  | "FOUNDING_PARTY"
+  | "UNKNOWN";
+
+interface EventDefinition {
+  type: EventType;
+  name: string;
+  sceneId: string;
+  requiredChars: string[];
+  requiredAction: string;
+  prereqs: string[];
+  consequence: string;
+  successOutcome: string;
+}
+
+const initialWorldState = {
+  colonialSolidarity: false,
+  revolutionaryIdeasSpread: false,
+  colonialismExposed: false,
+  revolutionaryTheoryBuilt: false,
+  workerPeasantAllianceBuilt: false,
+  partyFounded: false,
+};
+
+const EVENTS_MAP: Record<EventType, EventDefinition> = {
+  COLONIAL_UNION: {
+    type: "COLONIAL_UNION",
+    name: "Hội Liên Hiệp Thuộc Địa",
+    sceneId: "loc_paris_hll",
+    requiredChars: ["char_aiquoc", "char_worker_french", "char_worker_african"],
+    requiredAction: "act_doan_ket",
+    prereqs: [],
+    consequence: "colonialSolidarity",
+    successOutcome: "Hội Liên Hiệp Thuộc Địa (1921) ra đời — Nguyễn Ái Quốc đoàn kết giai cấp công nhân quốc tế, mở đầu hành trình gieo mầm cách mạng.",
+  },
+  LE_PARIA: {
+    type: "LE_PARIA",
+    name: "Báo Le Paria",
+    sceneId: "loc_paris_leparia",
+    requiredChars: ["char_aiquoc"],
+    requiredAction: "act_tuyen_truyen",
+    prereqs: ["colonialSolidarity"],
+    consequence: "revolutionaryIdeasSpread",
+    successOutcome: "Báo Le Paria (Người Cùng Khổ) ra đời tháng 4/1922 — vũ khí tư tưởng sắc bén tố cáo tội ác thực dân, thức tỉnh nhân dân thuộc địa.",
+  },
+  COLONIAL_REGIME_ON_TRIAL: {
+    type: "COLONIAL_REGIME_ON_TRIAL",
+    name: "Bản Án Chế Độ Thực Dân Pháp",
+    sceneId: "loc_paris_banan",
+    requiredChars: ["char_aiquoc"],
+    requiredAction: "act_tuyen_truyen",
+    prereqs: ["colonialSolidarity", "revolutionaryIdeasSpread"],
+    consequence: "colonialismExposed",
+    successOutcome: "\"Bản Án Chế Độ Thực Dân Pháp\" (1925) hoàn thành — tác phẩm tố cáo toàn diện tội ác thực dân, là văn kiện cách mạng có giá trị lịch sử lâu dài.",
+  },
+  DUONG_KACH_MENH: {
+    type: "DUONG_KACH_MENH",
+    name: "Đường Kách Mệnh",
+    sceneId: "loc_guangzhou",
+    requiredChars: ["char_aiquoc", "char_rev_youth"],
+    requiredAction: "act_huan_luyen",
+    prereqs: ["revolutionaryIdeasSpread", "colonialismExposed"],
+    consequence: "revolutionaryTheoryBuilt",
+    successOutcome: "\"Đường Kách Mệnh\" (1927) xuất bản — tác phẩm kim chỉ nam cho phong trào cách mạng Việt Nam, hun đúc lớp thanh niên yêu nước thành chiến sĩ cách mạng.",
+  },
+  WORKER_PEASANT_ALLIANCE: {
+    type: "WORKER_PEASANT_ALLIANCE",
+    name: "Liên minh Công-Nông",
+    sceneId: "loc_vietnam_village",
+    requiredChars: ["char_aiquoc", "char_viet_worker", "char_viet_farmer"],
+    requiredAction: "act_lien_minh",
+    prereqs: ["revolutionaryTheoryBuilt"],
+    consequence: "workerPeasantAllianceBuilt",
+    successOutcome: "Liên minh Công – Nông vững chắc! Nguyễn Ái Quốc xây dựng nền tảng xã hội cho cách mạng — giai cấp công nhân lãnh đạo, nông dân là lực lượng chủ yếu.",
+  },
+  FOUNDING_PARTY: {
+    type: "FOUNDING_PARTY",
+    name: "Thành lập Đảng CSVN",
+    sceneId: "loc_hongkong",
+    requiredChars: ["char_aiquoc"],
+    requiredAction: "act_thanh_lap",
+    prereqs: ["revolutionaryTheoryBuilt", "workerPeasantAllianceBuilt"],
+    consequence: "partyFounded",
+    successOutcome: "Ngày 3/2/1930 — Đảng Cộng sản Việt Nam chính thức thành lập tại Hội nghị Hợp nhất ở Hồng Kông! Bước ngoặt lịch sử vĩ đại, mở ra kỷ nguyên mới cho dân tộc Việt Nam.",
+  },
+  UNKNOWN: {
+    type: "UNKNOWN",
+    name: "Không rõ",
+    sceneId: "",
+    requiredChars: [],
+    requiredAction: "",
+    prereqs: [],
+    consequence: "",
+    successOutcome: "",
+  },
+};
+
+const identifyEvent = (sceneId: string, chars: string[], actions: string[]): EventType => {
+  if (!sceneId) return "UNKNOWN";
+  const action = actions[0] || "";
+
+  // 1. COLONIAL_UNION
+  if (sceneId === "loc_paris_hll") {
+    const req = ["char_aiquoc", "char_worker_french", "char_worker_african"];
+    if (action === "act_doan_ket" && chars.length === req.length && req.every(c => chars.includes(c))) {
+      return "COLONIAL_UNION";
+    }
+  }
+
+  // 2. LE_PARIA
+  if (sceneId === "loc_paris_leparia") {
+    if (action === "act_tuyen_truyen") {
+      const set1 = ["char_aiquoc"];
+      const set2 = ["char_aiquoc", "char_worker_french"];
+      if ((chars.length === set1.length && set1.every(c => chars.includes(c))) ||
+          (chars.length === set2.length && set2.every(c => chars.includes(c)))) {
+        return "LE_PARIA";
+      }
+    }
+  }
+
+  // 3. COLONIAL_REGIME_ON_TRIAL
+  if (sceneId === "loc_paris_banan") {
+    const req = ["char_aiquoc"];
+    if (action === "act_tuyen_truyen" && chars.length === req.length && req.every(c => chars.includes(c))) {
+      return "COLONIAL_REGIME_ON_TRIAL";
+    }
+  }
+
+  // 4. DUONG_KACH_MENH
+  if (sceneId === "loc_guangzhou") {
+    const req = ["char_aiquoc", "char_rev_youth"];
+    if (action === "act_huan_luyen" && chars.length === req.length && req.every(c => chars.includes(c))) {
+      return "DUONG_KACH_MENH";
+    }
+  }
+
+  // 5. WORKER_PEASANT_ALLIANCE
+  if (sceneId === "loc_vietnam_village") {
+    const req = ["char_aiquoc", "char_viet_worker", "char_viet_farmer"];
+    if (action === "act_lien_minh" && chars.length === req.length && req.every(c => chars.includes(c))) {
+      return "WORKER_PEASANT_ALLIANCE";
+    }
+  }
+
+  // 6. FOUNDING_PARTY
+  if (sceneId === "loc_hongkong") {
+    if (action === "act_thanh_lap") {
+      const set1 = ["char_aiquoc"];
+      const set2 = ["char_aiquoc", "char_rev_youth"];
+      if ((chars.length === set1.length && set1.every(c => chars.includes(c))) ||
+          (chars.length === set2.length && set2.every(c => chars.includes(c)))) {
+        return "FOUNDING_PARTY";
+      }
+    }
+  }
+
+  return "UNKNOWN";
+};
 
 // ==========================================
 // MAIN COMPONENT
@@ -233,18 +389,40 @@ export default function Chapter3Page() {
   const [isWin, setIsWin] = useState(false);
 
   // ==========================================
-  // RULE ENGINE
+  // RULE ENGINE & AUTO-VICTORY TRIGGER
   // ==========================================
   useEffect(() => {
     const newPanels = [...panels];
 
+    // 1. Identify events in all panels
+    const panelEvents = newPanels.map((p) =>
+      p.sceneId
+        ? identifyEvent(
+            p.sceneId,
+            p.characters.map((c) => c.id),
+            p.actions
+          )
+        : null
+    );
+
+    // 2. Count occurrences of each event to detect duplicates
+    const eventCounts: Record<string, number> = {};
+    for (const ev of panelEvents) {
+      if (ev && ev !== "UNKNOWN") {
+        eventCounts[ev] = (eventCounts[ev] || 0) + 1;
+      }
+    }
+
+    // 3. Sequential evaluation of world state
+    const currentWorldState = { ...initialWorldState };
+
     for (let i = 0; i < 6; i++) {
       const panel = { ...newPanels[i] };
-      const scene = panel.sceneId;
+      const sceneId = panel.sceneId;
       const chars = panel.characters.map((c) => c.id);
       const actions = panel.actions || [];
 
-      if (!scene) {
+      if (!sceneId) {
         panel.outcome = null;
         panel.isSuccess = false;
         panel.isError = false;
@@ -253,53 +431,144 @@ export default function Chapter3Page() {
         continue;
       }
 
-      let status: ScenarioStatus | null = null;
+      const eventType = panelEvents[i];
+
+      let isSuccess = false;
+      let isError = false;
+      let isConfuse = false;
       let outcome = "";
 
-      for (const rule of RULES) {
-        if (rule.sceneId !== scene) continue;
+      let emotionForAiQuoc = "idle";
+      let emotionForYouth = "idle";
+      let emotionForColonial = "idle";
+      let emotionForOthers = "idle";
 
-        // Enforce exact character match for SUCCESS, subset match for trap/confused rules
-        const isSuccessRule = rule.status === "SUCCESS";
-        const hasRequiredChars = isSuccessRule
-          ? (rule.requiredChars.length === chars.length && rule.requiredChars.every((c) => chars.includes(c)))
-          : rule.requiredChars.every((c) => chars.includes(c));
+      if (!eventType || eventType === "UNKNOWN") {
+        // Locally incorrect event
+        let status: ScenarioStatus | null = null;
+        for (const rule of RULES) {
+          if (rule.sceneId !== sceneId) continue;
+          if (rule.status === "SUCCESS") continue;
 
-        const hasRequiredAction = rule.requiredAction
-          ? actions.includes(rule.requiredAction)
-          : true;
+          const hasRequiredChars = rule.requiredChars.every((c) => chars.includes(c));
+          const hasRequiredAction = rule.requiredAction ? actions.includes(rule.requiredAction) : true;
 
-        if (hasRequiredChars && hasRequiredAction && chars.length > 0) {
-          status = rule.status;
-          outcome = rule.outcome;
-          break;
+          if (hasRequiredChars && hasRequiredAction && chars.length > 0) {
+            status = rule.status;
+            outcome = rule.outcome;
+            break;
+          }
         }
-      }
 
-      if (!status) {
-        if (chars.length > 0 && actions.length === 0) {
-          outcome = "Nhân vật đang chờ bạn đưa ra một quyết định...";
-        } else if (chars.length === 0 && actions.length > 0) {
-          outcome = "Hãy kéo thêm nhân vật vào để thực hiện hành động này.";
-        } else if (chars.length > 0 && actions.length > 0) {
-          status = "FAIL";
-          outcome = "Lựa chọn sai lầm! Quyết định này không phù hợp với thực tiễn lịch sử.";
+        if (!status) {
+          if (chars.length > 0 && actions.length === 0) {
+            outcome = "Nhân vật đang chờ bạn đưa ra một quyết định...";
+          } else if (chars.length === 0 && actions.length > 0) {
+            outcome = "Hãy kéo thêm nhân vật vào để thực hiện hành động này.";
+          } else if (chars.length > 0 && actions.length > 0) {
+            status = "FAIL";
+            outcome = "Lựa chọn này không tạo nên diễn biến lịch sử phù hợp.";
+          }
+        }
+
+        isSuccess = false;
+        isError = status === "FAIL" || true;
+        isConfuse = status === "CONFUSE";
+
+        // Historical contradiction or inconsistent logic
+        emotionForAiQuoc = "confused";
+        emotionForYouth = "confused";
+        emotionForColonial = "happy"; // Colonial French is pleased with confusion
+        emotionForOthers = "confused";
+      } else {
+        // Valid Event identified locally
+        const isDuplicate = eventCounts[eventType] > 1;
+        const prereqsMet = EVENTS_MAP[eventType].prereqs.every((p) => currentWorldState[p as keyof typeof initialWorldState]);
+
+        if (isDuplicate) {
+          isSuccess = false;
+          isError = true;
+          isConfuse = false;
+          
+          if (eventType === "COLONIAL_UNION") {
+            outcome = "Hội Liên Hiệp Thuộc Địa đã được thành lập trước đó. Sự kiện lịch sử không thể bị lặp lại.";
+          } else if (eventType === "LE_PARIA") {
+            outcome = "Báo Le Paria đã được xuất bản trước đó. Sự kiện lịch sử không thể bị lặp lại.";
+          } else if (eventType === "COLONIAL_REGIME_ON_TRIAL") {
+            outcome = "Sách Bản Án Chế Độ Thực Dân Pháp đã được hoàn thành trước đó. Sự kiện lịch sử không thể bị lặp lại.";
+          } else if (eventType === "DUONG_KACH_MENH") {
+            outcome = "Tác phẩm Đường Kách Mệnh đã được giảng dạy và xuất bản trước đó. Sự kiện lịch sử không thể bị lặp lại.";
+          } else if (eventType === "WORKER_PEASANT_ALLIANCE") {
+            outcome = "Khối liên minh Công - Nông đã được xây dựng trước đó. Sự kiện lịch sử không thể bị lặp lại.";
+          } else if (eventType === "FOUNDING_PARTY") {
+            outcome = "Đang thành lập Đảng, nhưng sự kiện lịch sử này đã diễn ra rồi.";
+          }
+
+          emotionForAiQuoc = "confused";
+          emotionForYouth = "confused";
+          emotionForColonial = "happy";
+          emotionForOthers = "confused";
+        } else if (!prereqsMet) {
+          // Premature event - Preparation stage
+          isSuccess = false;
+          isError = true;
+          isConfuse = false;
+
+          if (eventType === "LE_PARIA") {
+            outcome = "Nguyễn Ái Quốc đang tìm kiếm sự đoàn kết quốc tế trước khi xuất bản tờ báo cách mạng đầu tiên.";
+          } else if (eventType === "COLONIAL_REGIME_ON_TRIAL") {
+            outcome = "Nguyễn Ái Quốc cần tuyên truyền tư tưởng giải phóng trên báo chí trước khi hoàn thành Bản án chế độ thực dân.";
+          } else if (eventType === "DUONG_KACH_MENH") {
+            outcome = "Nguyễn Ái Quốc vẫn đang tìm cách truyền bá tư tưởng cách mạng trước khi có thể xây dựng lý luận hoàn chỉnh.";
+          } else if (eventType === "WORKER_PEASANT_ALLIANCE") {
+            outcome = "Nguyễn Ái Quốc muốn tập hợp lực lượng Công - Nông, nhưng cần có đường lối lý luận cách mạng soi đường.";
+          } else if (eventType === "FOUNDING_PARTY") {
+            outcome = "Những điều kiện để thành lập một chính đảng cách mạng vẫn đang được chuẩn bị.";
+          }
+
+          emotionForAiQuoc = "confused"; // thinking/confused
+          emotionForYouth = "confused";
+          emotionForColonial = "idle";
+          emotionForOthers = "confused";
+        } else {
+          // Successful event in historical sequence!
+          isSuccess = true;
+          isError = false;
+          isConfuse = false;
+          outcome = EVENTS_MAP[eventType].successOutcome;
+
+          // Update sequential world state
+          currentWorldState[EVENTS_MAP[eventType].consequence as keyof typeof initialWorldState] = true;
+
+          if (eventType === "FOUNDING_PARTY") {
+            emotionForAiQuoc = "happy"; // victorious
+            emotionForYouth = "happy"; // inspired
+            emotionForColonial = "angry"; // Colonial is defeated/angry
+            emotionForOthers = "happy";
+          } else {
+            emotionForAiQuoc = "angry"; // inspired
+            emotionForYouth = "happy"; // inspired
+            emotionForColonial = "angry";
+            emotionForOthers = "happy";
+          }
         }
       }
 
       panel.outcome = outcome || null;
-      panel.isSuccess = status === "SUCCESS";
-      panel.isError = status === "FAIL";
-      panel.isConfuse = status === "CONFUSE";
+      panel.isSuccess = isSuccess;
+      panel.isError = isError;
+      panel.isConfuse = isConfuse;
 
       panel.characters = panel.characters.map((c) => {
         let emotion = "idle";
-        if (panel.isConfuse) {
-          emotion = "confused";
-        } else if (status === "FAIL") {
-          emotion = "angry";
-        } else if (status === "SUCCESS") {
-          emotion = "happy";
+        if (c.id === "char_aiquoc") {
+          emotion = emotionForAiQuoc;
+        } else if (c.id === "char_rev_youth") {
+          emotion = emotionForYouth;
+        } else if (c.id === "char_colonial") {
+          emotion = emotionForColonial;
+        } else {
+          emotion = emotionForOthers;
         }
         return { ...c, stateImg: getCharStateImg(c.id, emotion) };
       });
@@ -311,20 +580,11 @@ export default function Chapter3Page() {
       setPanels(newPanels);
     }
 
+    // 4. Auto-victory check: All 6 panels must be successful and unique
     const successScenes = newPanels.filter((p) => p.isSuccess).map((p) => p.sceneId);
-    let expectedIndex = 0;
-    let isVictory = false;
-    for (const scene of successScenes) {
-      if (scene === VICTORY_TIMELINE[expectedIndex]) {
-        expectedIndex++;
-        if (expectedIndex === VICTORY_TIMELINE.length) {
-          isVictory = true;
-          break;
-        }
-      }
-    }
+    const uniqueSuccessSet = new Set(successScenes);
 
-    if (isVictory && !isWin) {
+    if (uniqueSuccessSet.size === 6 && newPanels.every((p) => p.isSuccess) && !isWin) {
       setIsWin(true);
       new Audio("/sounds/win.wav").play().catch(() => {});
       try {
@@ -525,7 +785,7 @@ export default function Chapter3Page() {
               {panel.outcome && (
                 <div className={`absolute bottom-0 w-full min-h-[44px] backdrop-blur-sm flex items-center justify-center px-2 py-1 z-20
                   ${panel.isError ? "bg-red-900/85" : panel.isConfuse ? "bg-gray-800/85" : "bg-black/75"}`}>
-                  <span className="text-white text-[11px] leading-tight text-center font-medium drop-shadow-md">
+                  <span className="text-white text-[11px] leading-tight text-center font-medium drop-shadow-md whitespace-pre-line">
                     {panel.outcome}
                   </span>
                 </div>
@@ -534,6 +794,8 @@ export default function Chapter3Page() {
           ))}
         </div>
       </div>
+
+
 
       {/* TOOLBAR
           FIX: outer div chỉ có overflow-x-auto, KHÔNG có justify-center
@@ -643,6 +905,8 @@ export default function Chapter3Page() {
           </motion.div>
         )}
       </AnimatePresence>
+
+
     </div>
   );
 }
