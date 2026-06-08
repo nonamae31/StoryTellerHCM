@@ -20,7 +20,7 @@ const notoSerif = Noto_Serif({
 
 export const metadata: Metadata = {
   title: "StoryTeller",
-  description: "Biên niên sử kinh tế",
+  description: "Biên niên sử Hồ Chí Minh - Truyện kể về cuộc đời và sự nghiệp của Chủ tịch Hồ Chí Minh",
 };
 
 export default function RootLayout({
