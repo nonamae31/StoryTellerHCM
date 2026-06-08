@@ -249,6 +249,23 @@ export default function ChapterPage() {
         }
       }
 
+      // Check Time Paradox for specific events
+      if (status === "SUCCESS") {
+        if (actions.includes("act_khuoctu")) {
+          const hasWitnessed = newPanels.slice(0, i).some(p => p.isSuccess && p.actions.includes("act_chungkien"));
+          if (!hasWitnessed) {
+            status = "FAIL";
+            outcome = "Nghịch lý thời gian: Nguyễn Tất Thành chưa chứng kiến nỗi khổ của nhân dân ở Huế, chưa đủ trải nghiệm thực tế để khước từ con đường Đông Du của cụ Phan.";
+          }
+        } else if (actions.includes("act_phubep")) {
+          const hasKhuoctu = newPanels.slice(0, i).some(p => p.isSuccess && p.actions.includes("act_khuoctu"));
+          if (!hasKhuoctu) {
+            status = "FAIL";
+            outcome = "Nghịch lý thời gian: Người chưa khước từ lối mòn ở Nghệ An thì làm sao có quyết tâm vào tận Sài Gòn vươn ra biển lớn?";
+          }
+        }
+      }
+
       const bacForms = ["char_sinhcung", "char_tatthanh", "char_vanba"];
       const placedBac = chars.find(c => bacForms.includes(c));
       if (placedBac && placedBac !== currentBac) {
